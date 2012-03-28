@@ -34,9 +34,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 
-import org.juzu.impl.compiler.VirtualJavaFileObject.CompiledClass;
-import org.juzu.impl.compiler.VirtualJavaFileObject.GeneratedSource;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
