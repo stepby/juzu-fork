@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.parser;
+package org.juzu.impl.utils;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -23,30 +23,40 @@ package org.juzu.impl.template.parser;
  *
  * Mar 28, 2012
  */
-public class TextItem extends SectionItem {
+public class CharSequenceReader {
 
-	private final String data;
+	private final CharSequence s;
 	
-	public TextItem(Location pos, String data) {
-		super(pos);
-		this.data = data;
+	private char[] unread;
+	
+	private int pos;
+	
+	private int index;
+	
+	public CharSequenceReader(CharSequence s) {
+		this.s = s;
+		this.unread = null;
+		this.index = 0;
+		this.pos = 0;
 	}
 	
-	public String getData() {
-		return data;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		else if(obj instanceof TextItem) {
-			TextItem that = (TextItem)obj;
-			return data.equals(that.data);
+	public int read() {
+		if(pos > 0) {
+			return unread[--pos];
+		} else {
+			if(index < s.length())
+				return s.charAt(index++);
+			else
+				return -1;
 		}
-		return false;
 	}
 	
-	public String toString() {
-		return "DataText[pos=" + getPosition() + ", data=" + data + "]";
+	public void unread(int c) {
+		if(unread == null)
+			unread = new char[10];
+		if(pos + 1 < unread.length)
+			unread[pos++] = (char)c;
+		else
+			throw new IllegalStateException("Buffer full");
 	}
 }

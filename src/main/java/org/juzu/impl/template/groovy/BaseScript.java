@@ -15,24 +15,54 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.parser;
+package org.juzu.impl.template.groovy;
+
+import groovy.lang.Binding;
+import groovy.lang.Script;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
+ * Mar 29, 2012
  */
-public abstract class SectionItem {
+public abstract class BaseScript extends Script {
 
-	private final Location pos;
+	private GroovyPrinter printer;
 	
-	protected SectionItem(Location pos) {
-		if(pos == null) throw new NullPointerException();
-		this.pos = pos;
+	protected BaseScript() {
+		
 	}
 	
-	public Location getPosition() {
-		return pos;
+	protected BaseScript(Binding binding) {
+		super(binding);
+	}
+	
+	public GroovyPrinter getPrinter() {
+		return printer;
+	}
+	
+	public void setPrinter(GroovyPrinter printer) {
+		this.printer = printer;
+	}
+	
+	public Object getProperty(String property) {
+		if("out".equals(property)) return printer;
+		else return super.getProperty(property);
+	}
+	
+	@Override
+	public void println() {
+		printer.println();
+	}
+	
+	@Override
+	public void println(Object o) {
+		printer.println(o);
+	}
+	
+	@Override
+	public void print(Object o) {
+		printer.print(o);
 	}
 }

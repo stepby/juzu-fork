@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.parser;
+package org.juzu.impl.template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -23,19 +23,23 @@ package org.juzu.impl.template.parser;
  *
  * Mar 28, 2012
  */
-public class LineBreakItem extends SectionItem {
+public abstract class TemplateBuilder<T extends Template> {
 
-	public LineBreakItem(Location pos) {
-		super(pos);
-	}
-
-	@Override
-	public String toString() {
-		return "LineBreak[pos=" + getPosition() + "]";
-	}
+	public abstract void startScriptlet();
 	
-	@Override
-	public boolean equals(Object obj) {
-		return this == obj || obj instanceof LineBreakItem;
-	}
+	public abstract void appendScriptlet(ASTNode.Text scriptlet);
+	
+	public abstract void endScriptlet();
+	
+	public abstract void startExpression();
+	
+	public abstract void appendExpression(ASTNode.Text expr);
+	
+	public abstract void endExpression();
+	
+	public abstract void appendText(String text);
+	
+	public abstract void appendLineBreak(SectionType currentType);
+	
+	public abstract T build();
 }

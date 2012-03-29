@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.parser;
+package org.juzu.impl.template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -23,11 +23,39 @@ package org.juzu.impl.template.parser;
  *
  * Mar 28, 2012
  */
-public enum SectionType {
+public class Location {
+	
+	private final int col;
+	
+	private final int line;
 
-	STRING,
+	public Location(int col, int line) {
+		if(col < 0) throw new IllegalArgumentException();
+		if(line < 0) throw new IllegalArgumentException();
+		this.col = col;
+		this.line = line;
+	}
 	
-	SCRIPTLET,
+	public int getCol() {
+		return col;
+	}
 	
-	EXPR
+	public int getLine() {
+		return line;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) return true;
+		else if(obj instanceof Location) {
+			Location that = (Location) obj;
+			return col == that.col && line == that.line;
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return "Location[col=" + col + ", line=" +line+ "]";
+	}
 }
