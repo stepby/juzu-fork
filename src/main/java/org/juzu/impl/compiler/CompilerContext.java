@@ -18,12 +18,10 @@
 package org.juzu.impl.compiler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,14 +44,14 @@ public class CompilerContext<P, D extends P, F extends P> {
 	
 	private JavaCompiler compiler;
 	
-	private VirtualFileManager fileManager;
+	private VirtualFileManager<P, D, F> fileManager;
 	
 	private Set<Processor> processors;
 	
 	public CompilerContext(FileSystem<P, D, F> fs) {
 		this.fs = fs;
 		this.compiler = ToolProvider.getSystemJavaCompiler();
-		this.fileManager = new VirtualFileManager(compiler.getStandardFileManager(null, null, null));
+		this.fileManager = new VirtualFileManager<P, D, F>(fs, compiler.getStandardFileManager(null, null, null));
 		this.processors = new HashSet<Processor>();
 	}
 	
@@ -63,17 +61,23 @@ public class CompilerContext<P, D extends P, F extends P> {
 	}
 	
 	public Map<String, ClassFile> compile() throws IOException {
-		Collection<VirtualJavaFileObject.FileSystem<P, F>> sources = collectJavaFiles();
-		for(Iterator<VirtualJavaFileObject.FileSystem<P, F>> i = sources.iterator(); i.hasNext();) {
-			VirtualJavaFileObject.FileSystem<P, F> source = i.next();
+		Collection<VirtualJavaFileObject.FileSystem<P, D, F>> sources = fileManager.collectJavaFiles();
+		
+		fileManager.files.clear();
+		//TODO: fileManager.resources.clear();
+		
+		//Filter compiled files
+		for(Iterator<VirtualJavaFileObject.FileSystem<P, D, F>> i = sources.iterator(); i.hasNext();) {
+			VirtualJavaFileObject.FileSystem<P, D, F> source = i.next();
 			FileKey key = source.key;
+			
 			VirtualJavaFileObject.CompiledClass existing = (VirtualJavaFileObject.CompiledClass)fileManager.files.get(new FileKey(key.rawPath, JavaFileObject.Kind.CLASS));
-			if(existing != null) {
-				ClassFile cf = existing.getFile();
-				if(cf != null && cf.getLastModified() >= source.getLastModified()) {
-					i.remove();
-				}
-			}
+//			if(existing != null) {
+//				ClassFile cf = existing.getFile();
+//				if(cf != null && cf.getLastModified() >= source.getLastModified()) {
+//					i.remove();
+//				}
+//			}
 		}
 		
 		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, null, null, sources);
@@ -89,52 +93,5 @@ public class CompilerContext<P, D extends P, F extends P> {
 		} else {
 			return null;
 		}
-	}
-	
-	public Collection<VirtualJavaFileObject.FileSystem<P, F>> collectJavaFiles() throws IOException {
-		D root = fs.getRoot();
-		List<VirtualJavaFileObject.FileSystem<P, F>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<P,F>>();
-		collectJavaFiles(root, javaFiles);
-		return javaFiles;
-	}
-	
-	private void collectJavaFiles(D dir, List<VirtualJavaFileObject.FileSystem<P, F>> javaFiles) throws IOException {
-		for(Iterator<P> i = fs.getChildren(dir); i.hasNext();) {
-			P child = i.next();
-			if(fs.isFile(child)) {
-				String name = fs.getName(child);
-				if(name.endsWith(".java")) {
-					F javaFile = fs.asFile(child);
-					FileKey key = getURI(javaFile);
-					javaFiles.add(new VirtualJavaFileObject.FileSystem<P, F>(this, javaFile, key));
-				}
-			} else {
-				D childDir = fs.asDir(child);
-				collectJavaFiles(childDir, javaFiles);
-			}
-		}
-	}
-	
-	private StringBuilder foo(P file) throws IOException {
-		P parent = fs.getParent(file);
-		if(parent == null) return new StringBuilder("/");
-		else if(fs.equals(parent, fs.getRoot())) {
-			return new StringBuilder("/").append(fs.getName(file));
-		} else {
-			return foo(parent).append('/').append(fs.getName(file));
-		}
-	}
-	
-	public FileKey getURI(F file) throws IOException {
-		String name = fs.getName(file);
-		if(!name.endsWith(".java")) throw new IllegalArgumentException("File " + file + " is not a source file");
-		String rawName = name.substring(0, name.length() - ".java".length());
-		StringBuilder builder = foo(fs.getParent(file));
-		if(builder.length() == 1) {
-			builder.append(rawName);
-		} else {
-			builder.append('/').append(rawName);
-		}
-		return new FileKey(builder.toString(), JavaFileObject.Kind.SOURCE);
 	}
 }

@@ -19,8 +19,10 @@ package org.juzu.impl.compiler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,22 +36,75 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 
+import org.juzu.impl.spi.fs.FileSystem;
+import org.juzu.impl.utils.Spliterator;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  * Mar 16, 2012
  */
-class VirtualFileManager extends ForwardingJavaFileManager<StandardJavaFileManager>{
+class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFileManager<StandardJavaFileManager>{
 
+	final FileSystem<P, D, F> fs;
+	
 	final Map<FileKey, VirtualJavaFileObject.Class> files;
 	
 	final LinkedList<VirtualJavaFileObject.CompiledClass> modifications;
 	
-	public VirtualFileManager(StandardJavaFileManager fileManager) {
+	public VirtualFileManager(FileSystem<P, D, F> fs, StandardJavaFileManager fileManager) {
 		super(fileManager);
+		this.fs = fs;
 		this.files = new HashMap<FileKey, VirtualJavaFileObject.Class>();
 		this.modifications = new LinkedList<VirtualJavaFileObject.CompiledClass>();
+	}
+	
+	public Collection<VirtualJavaFileObject.FileSystem<P, D, F>> collectJavaFiles() throws IOException {
+		D root = fs.getRoot();
+		List<VirtualJavaFileObject.FileSystem<P, D, F>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<P, D, F>>();
+		collectJavaFiles(root, javaFiles);
+		return javaFiles;
+	}
+	
+	private void collectJavaFiles(D dir, List<VirtualJavaFileObject.FileSystem<P, D, F>> javaFiles) throws IOException {
+		for(Iterator<P> i = fs.getChildren(dir); i.hasNext();) {
+			P child = i.next();
+			if(fs.isFile(child)) {
+				String name = fs.getName(child);
+				if(name.endsWith(".java")) {
+					F javaFile = fs.asFile(child);
+					FileKey key = getURI(javaFile);
+					javaFiles.add(new VirtualJavaFileObject.FileSystem<P, D, F>(fs, javaFile, key));
+				}
+			} else {
+				D childDir = fs.asDir(child);
+				collectJavaFiles(childDir, javaFiles);
+			}
+		}
+	}
+	
+	private StringBuilder foo(P file) throws IOException {
+		P parent = fs.getParent(file);
+		if(parent == null) return new StringBuilder("/");
+		else if(fs.equals(parent, fs.getRoot())) {
+			return new StringBuilder("/").append(fs.getName(file));
+		} else {
+			return foo(parent).append('/').append(fs.getName(file));
+		}
+	}
+	
+	public FileKey getURI(F file) throws IOException {
+		String name = fs.getName(file);
+		if(!name.endsWith(".java")) throw new IllegalArgumentException("File " + file + " is not a source file");
+		String rawName = name.substring(0, name.length() - ".java".length());
+		StringBuilder builder = foo(fs.getParent(file));
+		if(builder.length() == 1) {
+			builder.append(rawName);
+		} else {
+			builder.append('/').append(rawName);
+		}
+		return new FileKey(builder.toString(), JavaFileObject.Kind.SOURCE);
 	}
 
 	@Override
@@ -95,6 +150,34 @@ class VirtualFileManager extends ForwardingJavaFileManager<StandardJavaFileManag
 			return fileClass.className;
 		} else {
 			return super.inferBinaryName(location, file);
+		}
+	}
+	
+	@Override
+	public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+		if(location == StandardLocation.SOURCE_PATH) {
+			D current = fs.getRoot();
+			Spliterator s = new Spliterator(packageName, '.');
+			while(s.hasNext()) {
+				String name = s.next();
+				P child = fs.getChild(current, name);
+				if(child != null || fs.isDir(child)) {
+					current = fs.asDir(child);
+				} else {
+					current = null;
+					break;
+				}
+			}
+			if(current != null) {
+				P child = fs.getChild(current, relativeName);
+				if(child != null && fs.isFile(child)) {
+					F file = fs.asFile(child);
+					return new VirtualJavaFileObject.FileSystem<P, D, F>(fs, file, getURI(file));
+				}
+			}
+			throw new IllegalArgumentException("Could not locate pkg=" + packageName + " name=" + relativeName);
+		} else {
+			return super.getFileForOutput(location, packageName, relativeName, sibling);
 		}
 	}
 	

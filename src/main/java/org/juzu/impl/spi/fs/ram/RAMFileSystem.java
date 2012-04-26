@@ -80,4 +80,8 @@ public class RAMFileSystem implements FileSystem<RAMPath, RAMDir, RAMFile> {
 	public long getLastModified(RAMPath path) throws IOException {
 		return path.getLastModified();
 	}
+
+	public RAMPath getChild(RAMDir dir, String name) throws IOException {
+		return dir.children.get(name);
+	}
 }

@@ -79,6 +79,11 @@ public class DiskFileSystem implements FileSystem<File, File, File> {
 		if(!path.isDirectory()) throw new IllegalArgumentException("File " + path + " is not a directory");
 		return path;
 	}
+	
+	public File getChild(File dir, String name) throws IOException {
+		File child = new File(dir, name);
+		return child.exists() ? child : null;
+	}
 
 	public Content getContent(File file) throws IOException {
 		FileReader reader = new FileReader(file);
