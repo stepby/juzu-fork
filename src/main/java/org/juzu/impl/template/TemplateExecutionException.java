@@ -17,6 +17,8 @@
  */
 package org.juzu.impl.template;
 
+import org.juzu.template.Location;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$

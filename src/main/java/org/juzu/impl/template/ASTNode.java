@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.juzu.template.Location;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -53,7 +55,7 @@ public abstract class ASTNode {
 			return sections;
 		}
 		
-		public <T extends org.juzu.impl.template.Template> T build(TemplateBuilder<T> builder) {
+		public <T extends org.juzu.template.Template> T build(TemplateBuilder<T> builder) {
 			BuilderContext ctx = new BuilderContext(builder);
 			for(ASTNode.Section section : sections) {
 				ctx.begin(section.getType());

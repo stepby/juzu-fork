@@ -15,12 +15,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template;
+package org.juzu.template;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
+import org.juzu.impl.template.TemplateExecutionException;
 import org.juzu.text.Printer;
 
 /**

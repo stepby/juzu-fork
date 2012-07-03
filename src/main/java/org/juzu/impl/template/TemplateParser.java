@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.juzu.impl.utils.CharSequenceReader;
+import org.juzu.template.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

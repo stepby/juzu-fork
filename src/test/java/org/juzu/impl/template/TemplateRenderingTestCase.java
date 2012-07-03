@@ -17,10 +17,14 @@
  */
 package org.juzu.impl.template;
 
+import java.awt.AWTError;
+import java.awt.AWTException;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -104,6 +108,12 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 		assertEquals("bar\"", render("$foo\"", context));
 	}
 	
+	public void testDollarInExpression() throws Exception {
+		Map<String, String> context = new HashMap<String, String>();
+		context.put("foo", "bar");
+		assertEquals("bar", render("<%= \"$foo\"%>", context));
+	}
+	
 	public void testEscapeDollarInExpression() throws Exception {
 		Map<String, String> context = new HashMap<String, String>();
 		context.put("foo", "bar");
@@ -114,6 +124,64 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 		Map<String, String> context = new HashMap<String, String>();
 		context.put("foo", "bar");
 		assertEquals("$foo", render("\\$foo", context));
+	}
+	
+	public void testDollarInScriplet() throws Exception {
+		Map<String,String> context = new HashMap<String,String>();
+		context.put("foo", "bar");
+		assertEquals("bar", render("<% out.print(\"$foo\")%>", context));
+	}
+	
+	public void testEscapeDollarInScriplet() throws Exception {
+		Map<String,String> context = new HashMap<String,String>();
+		context.put("foo", "bar");
+		assertEquals("$foo", render("<% out.print(\"\\$foo\") %>", context));
+	}
+	
+	public void testQuote() throws Exception {
+		assertEquals("\"", render("\""));
+	}
+	
+	public void testException() throws Exception {
+		try {
+			render("<% throw new java.awt.AWTException(); %>");
+			fail();
+		} catch(TemplateExecutionException e) {
+			assertTrue(e.getCause() instanceof AWTException);
+		}
+	}
+	
+	public void testRuntimeException() throws Exception {
+		try {
+			render("<% throw new java.util.EmptyStackException(); %>");
+			fail();
+		} catch(TemplateExecutionException e) {
+			assertTrue(e.getCause() instanceof EmptyStackException);
+		}
+	}
+	
+	public void testIOException() throws Exception {
+		try {
+			render("<% throw new java.io.IOException(); %>");
+			fail();
+		} catch(IOException e) {
+		}
+	}
+	
+	public void testError() throws Exception {
+		try {
+			render("<% throw new java.awt.AWTError(); %>");
+			fail();
+		} catch(AWTError e){
+		}
+	}
+	
+	public void testThrowable() throws Exception {
+		try {
+			render("<% throw new Throwable(); %>");
+			fail();
+		} catch(Throwable e) {
+		}
 	}
 	
 	public static Object out;

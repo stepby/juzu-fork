@@ -15,33 +15,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template;
+package org.juzu.template;
 
-import org.juzu.template.Template;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import javax.inject.Qualifier;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
+ * May 21, 2012
  */
-public abstract class TemplateBuilder<T extends Template> {
-
-	public abstract void startScriptlet();
-	
-	public abstract void appendScriptlet(ASTNode.Text scriptlet);
-	
-	public abstract void endScriptlet();
-	
-	public abstract void startExpression();
-	
-	public abstract void appendExpression(ASTNode.Text expr);
-	
-	public abstract void endExpression();
-	
-	public abstract void appendText(String text);
-	
-	public abstract void appendLineBreak(SectionType currentType);
-	
-	public abstract T build();
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TemplateRef {
+	String value();
 }

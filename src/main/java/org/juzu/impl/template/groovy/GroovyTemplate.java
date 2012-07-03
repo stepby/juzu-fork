@@ -30,8 +30,8 @@ import java.util.Map;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.juzu.impl.template.ASTNode;
-import org.juzu.impl.template.Template;
 import org.juzu.impl.template.TemplateExecutionException;
+import org.juzu.template.Template;
 import org.juzu.text.Printer;
 
 /**
@@ -66,6 +66,10 @@ public class GroovyTemplate extends Template {
 			scriptClass = loader.parseClass(gcs, false);
 		}
 		return scriptClass;
+	}
+	
+	public String getScript() {
+		return script;
 	}
 	
 	public String getClassName() {

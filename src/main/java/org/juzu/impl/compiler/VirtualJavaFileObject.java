@@ -143,6 +143,37 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 		}
 	}
 	
+	static class GeneratedResource extends VirtualJavaFileObject {
+		
+		private StringWriter writer;
+		
+		private String content;
+
+		GeneratedResource(FileKey key) {
+			super(key);
+			this.writer = null;
+			this.content = null;
+		}
+		
+		@Override
+		public Writer openWriter() throws IOException {
+			content = null;
+			writer = new StringWriter() {
+				@Override
+				public void close() throws IOException {
+					content = toString();
+					writer = null;
+				}
+			};
+			return writer;
+		}
+		
+		@Override
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+			return content;	
+		}
+	}
+	
 	static class GeneratedSource extends Class {
 
 		private StringWriter writer;

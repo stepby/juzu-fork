@@ -51,6 +51,8 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 	
 	final Map<FileKey, VirtualJavaFileObject.Class> files;
 	
+	final Map<FileKey, VirtualJavaFileObject.GeneratedResource> resources;
+	
 	final LinkedList<VirtualJavaFileObject.CompiledClass> modifications;
 	
 	public VirtualFileManager(FileSystem<P, D, F> fs, StandardJavaFileManager fileManager) {
@@ -58,6 +60,7 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 		this.fs = fs;
 		this.files = new HashMap<FileKey, VirtualJavaFileObject.Class>();
 		this.modifications = new LinkedList<VirtualJavaFileObject.CompiledClass>();
+		this.resources = new HashMap<FileKey, VirtualJavaFileObject.GeneratedResource>();
 	}
 	
 	public Collection<VirtualJavaFileObject.FileSystem<P, D, F>> collectJavaFiles() throws IOException {
@@ -84,27 +87,40 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 		}
 	}
 	
-	private StringBuilder foo(P file) throws IOException {
-		P parent = fs.getParent(file);
-		if(parent == null) return new StringBuilder("/");
-		else if(fs.equals(parent, fs.getRoot())) {
-			return new StringBuilder("/").append(fs.getName(file));
-		} else {
-			return foo(parent).append('/').append(fs.getName(file));
-		}
+	private FileKey getURI(F file) throws IOException {
+		StringBuilder pkgName = foo(fs.getParent(file));
+		return getURI(pkgName.toString(), fs.getName(file));
 	}
 	
-	public FileKey getURI(F file) throws IOException {
-		String name = fs.getName(file);
-		if(!name.endsWith(".java")) throw new IllegalArgumentException("File " + file + " is not a source file");
-		String rawName = name.substring(0, name.length() - ".java".length());
-		StringBuilder builder = foo(fs.getParent(file));
-		if(builder.length() == 1) {
-			builder.append(rawName);
+	public FileKey getURI(String pkgName, String name) throws IOException {
+		JavaFileObject.Kind kind;
+		if(name.endsWith(".java")) {
+			kind = JavaFileObject.Kind.SOURCE;
+		} else if(name.endsWith(".class")) {
+			kind = JavaFileObject.Kind.CLASS;
+		} else if(name.endsWith(".html")) {
+			kind = JavaFileObject.Kind.HTML;
 		} else {
-			builder.append('/').append(rawName);
+			kind = JavaFileObject.Kind.OTHER;
 		}
-		return new FileKey(builder.toString(), JavaFileObject.Kind.SOURCE);
+		String rawName = name.substring(0, name.length() - kind.extension.length());
+		String rawPath;
+		if(pkgName.length() == 0) {
+			rawPath = "/" + rawName;
+		} else {
+			rawPath = "/" + pkgName.replace('.', '/') + "/" + rawName;
+		}
+		return new FileKey(rawPath, kind);
+	}
+	
+	private StringBuilder foo(P file) throws IOException {
+		P parent = fs.getParent(file);
+		if(parent == null) return new StringBuilder("");
+		else if(fs.equals(parent, fs.getRoot())) {
+			return new StringBuilder("").append(fs.getName(file));
+		} else {
+			return foo(parent).append('.').append(fs.getName(file));
+		}
 	}
 
 	@Override
@@ -112,7 +128,7 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 		Iterable<JavaFileObject> s = super.list(location, packageName, kinds, recurse);
 		
 		List<JavaFileObject> ret = Collections.emptyList();
-		if(location == StandardLocation.CLASS_PATH && kinds.contains(JavaFileObject.Kind.CLASS)) {
+		if(location == StandardLocation.CLASS_OUTPUT && kinds.contains(JavaFileObject.Kind.CLASS)) {
 			Pattern pattern = Tools.getPackageMatcher(packageName, recurse);
 			Matcher matcher = null;
 			for(VirtualJavaFileObject.Class file : files.values()) {
@@ -176,6 +192,13 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 				}
 			}
 			throw new IllegalArgumentException("Could not locate pkg=" + packageName + " name=" + relativeName);
+		} else if(location == StandardLocation.CLASS_OUTPUT) {
+			FileKey key = getURI(packageName, relativeName);
+			VirtualJavaFileObject.GeneratedResource file = resources.get(key);
+			if(file == null) {
+				resources.put(key, file = new VirtualJavaFileObject.GeneratedResource(key));
+			}
+			return file;
 		} else {
 			return super.getFileForOutput(location, packageName, relativeName, sibling);
 		}

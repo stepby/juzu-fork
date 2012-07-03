@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.juzu.impl.template.ASTNode;
-import org.juzu.impl.template.Location;
 import org.juzu.impl.template.SectionType;
 import org.juzu.impl.template.TemplateParser;
+import org.juzu.template.Location;
 
 import junit.framework.TestCase;
 
