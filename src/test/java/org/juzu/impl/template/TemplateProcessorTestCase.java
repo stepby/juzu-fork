@@ -17,16 +17,13 @@
  */
 package org.juzu.impl.template;
 
-import java.util.Map;
+import junit.framework.TestCase;
 
-import org.juzu.impl.compiler.ClassFile;
 import org.juzu.impl.compiler.CompilerContext;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -43,6 +40,6 @@ public class TemplateProcessorTestCase extends TestCase {
 		RAMFile b = foo.addFile("B.gtmpl").update("out.println('hello')");
 		CompilerContext<RAMPath, RAMDir, RAMFile> compiler = new CompilerContext<RAMPath, RAMDir, RAMFile>(ramFS);
 		compiler.addAnnotationProcessor(new TemplateProcessor());
-		Map<String, ClassFile> res = compiler.compile();
+		assertTrue(compiler.compile());
 	}
 }

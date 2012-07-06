@@ -23,17 +23,17 @@ package org.juzu.impl.compiler;
  *
  * Mar 16, 2012
  */
-public class ClassFile {
+public class VirtualContent<C> {
 
-	private final String fqn;
+	private final FileKey key;
 	
-	private final byte[] bytes;
+	private final C value;
 	
 	private final long lastModified;
 	
-	public ClassFile(String fqn, byte[] bytes) {
-		this.fqn = fqn;
-		this.bytes = bytes;
+	public VirtualContent(FileKey key, C values) {
+		this.key = key;
+		this.value = values;
 		this.lastModified = System.currentTimeMillis();
 	}
 	
@@ -41,11 +41,11 @@ public class ClassFile {
 		return lastModified;
 	}
 	
-	public byte[] getBytes() {
-		return bytes;
+	public C getValue() {
+		return value;
 	}
 	
 	public String getFQN() {
-		return fqn;
+		return key.fqn;
 	}
 }

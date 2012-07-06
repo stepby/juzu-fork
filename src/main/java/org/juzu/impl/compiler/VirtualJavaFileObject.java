@@ -77,7 +77,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 			long lastModified = fs.getLastModified(file);
 			
 			if(content == null || this.lastModified < lastModified) {
-				Content content = fs.getContent(file);
+				org.juzu.impl.spi.fs.Content content = fs.getContent(file);
 				this.content = content.getValue();
 				this.lastModified = content.getLastModified();
 			}
@@ -86,122 +86,87 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 		}
 	}
 	
-	static class Class extends VirtualJavaFileObject {
+	static class RandomAccess<C> extends VirtualJavaFileObject {
 
-		final String className;
+		protected VirtualContent<C> content;
 		
-		Class(FileKey key, String className) {
+		RandomAccess(FileKey key) {
 			super(key);
-			this.className = className;
-		}
-	}
-	
-	static class CompiledClass extends Class {
-
-		private ByteArrayOutputStream out;
-		
-		private ClassFile file;
-		
-		private VirtualFileManager manager;
-		
-		CompiledClass(VirtualFileManager manager, String className, FileKey key) {
-			super(key, className);
-			this.file = null;
-			this.out = null;
-			this.manager = manager;
+			this.content = null;
 		}
 		
-		ClassFile getFile() {
-			return file;
-		}
-		
-		@Override
 		public long getLastModified() {
-			return file == null ? 0 : file.getLastModified();
+			return content == null ? 0 : content.getLastModified();
 		}
 		
-		@Override
-		public OutputStream openOutputStream() throws IOException {
-			file = null;
-			out = new ByteArrayOutputStream() {
-				@Override
-				public void close() throws IOException {
-					file = new ClassFile(className, toByteArray());
-					out = null;
-					manager.modifications.add(CompiledClass.this);
-				}
-			};
-			return out;
-		}
-		
-		@Override
-		public InputStream openInputStream() throws IOException {
-			if(file != null) 
-				return new ByteArrayInputStream(file.getBytes());
-			else 
-				throw new IOException("No content");
-		}
-	}
-	
-	static class GeneratedResource extends VirtualJavaFileObject {
-		
-		private StringWriter writer;
-		
-		private String content;
+		/**
+		 * Compiled class
+		 */
+		static class Binary extends RandomAccess<byte[]> {
 
-		GeneratedResource(FileKey key) {
-			super(key);
-			this.writer = null;
-			this.content = null;
-		}
-		
-		@Override
-		public Writer openWriter() throws IOException {
-			content = null;
-			writer = new StringWriter() {
-				@Override
-				public void close() throws IOException {
-					content = toString();
-					writer = null;
+			private ByteArrayOutputStream out;
+			
+			Binary(FileKey key) {
+				super(key);
+				this.out = null;
+			}
+			
+			@Override
+			public OutputStream openOutputStream() throws IOException {
+				content = null;
+				out = new ByteArrayOutputStream() {
+					@Override
+					public void close() throws IOException {
+						content = new VirtualContent<byte[]>(key, toByteArray());
+						out = null;
+					}
+				};
+				return out;
+			}
+			
+			@Override
+			public InputStream openInputStream() throws IOException {
+				if(content != null) {
+					return new ByteArrayInputStream(content.getValue());
+				} else {
+					throw new IOException("No content");
 				}
-			};
-			return writer;
+			}
 		}
 		
-		@Override
-		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-			return content;	
-		}
-	}
-	
-	static class GeneratedSource extends Class {
+		/**
+		 * Generated class
+		 */
+		static class Text extends RandomAccess<CharSequence> {
 
-		private StringWriter writer;
-		
-		private String content;
-		
-		GeneratedSource(String className, FileKey key) {
-			super(key, className);
-			this.content = null;
-			this.writer = null;
-		}
-		
-		@Override
-		public Writer openWriter() throws IOException {
-			content = null;
-			writer = new StringWriter() {
-				@Override
-				public void close() throws IOException {
-					content = toString();
-					writer = null;
+			private StringWriter writer;
+			
+			Text(FileKey key) throws IOException {
+				super(key);
+				this.writer = null;
+			}
+			
+			@Override
+			public Writer openWriter() throws IOException {
+				content = null;
+				writer = new StringWriter() {
+					@Override
+					public void close() throws IOException {
+						content = new VirtualContent<CharSequence>(key, writer.toString());
+						writer = null;
+					}
+				};
+				return writer;
+			}
+			
+			@Override
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+				if(content != null) {
+					return content.getValue();
+				} else {
+					throw new IOException("No content");
 				}
-			};
-			return writer;
-		}
-		
-		@Override
-		public CharSequence getCharContent(boolean ignoreEncodingError) throws IOException {
-			return content;
+			}
 		}
 	}
 }

@@ -60,38 +60,47 @@ public class CompilerContext<P, D extends P, F extends P> {
 		processors.add(annotationProcessorType);
 	}
 	
-	public Map<String, ClassFile> compile() throws IOException {
+	public Set<FileKey> getClassOutputKeys() {
+		return fileManager.classOutput.keySet();
+	}
+	
+	public VirtualContent<?> getClassOuput(FileKey key) {
+		VirtualJavaFileObject.RandomAccess file = fileManager.classOutput.get(key);
+		return file != null ? file.content : null;
+	}
+	
+	public Set<FileKey> getSourceOuputKeys() {
+		return fileManager.sourceOutput.keySet();
+	}
+	
+	public VirtualContent<?> getSourceOutput(FileKey key) {
+		VirtualJavaFileObject.RandomAccess file = fileManager.sourceOutput.get(key);
+		return file != null ? file.content : null;
+	}
+	
+	public boolean compile() throws IOException {
 		Collection<VirtualJavaFileObject.FileSystem<P, D, F>> sources = fileManager.collectJavaFiles();
-		
-		fileManager.files.clear();
-		//TODO: fileManager.resources.clear();
+		fileManager.sourceOutput.clear();
+		fileManager.classOutput.clear();
 		
 		//Filter compiled files
 		for(Iterator<VirtualJavaFileObject.FileSystem<P, D, F>> i = sources.iterator(); i.hasNext();) {
 			VirtualJavaFileObject.FileSystem<P, D, F> source = i.next();
 			FileKey key = source.key;
-			
-			VirtualJavaFileObject.CompiledClass existing = (VirtualJavaFileObject.CompiledClass)fileManager.files.get(new FileKey(key.rawPath, JavaFileObject.Kind.CLASS));
-//			if(existing != null) {
-//				ClassFile cf = existing.getFile();
-//				if(cf != null && cf.getLastModified() >= source.getLastModified()) {
-//					i.remove();
-//				}
-//			}
+			VirtualJavaFileObject.RandomAccess.Binary existing = (VirtualJavaFileObject.RandomAccess.Binary)fileManager.classOutput.get(key.as(JavaFileObject.Kind.CLASS));
+			//For now we don't support the feature
+			/*
+			 if(existing != null) {
+				ClassFile cf = existing.getFile();
+				if(cf != null && cf.getLastModified() >= source.getLastModified()) {
+					i.remove();
+				}
+			}
+			*/
 		}
 		
 		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, null, null, sources);
 		task.setProcessors(processors);
-		
-		if(task.call()) {
-			Map<String, ClassFile> files = new HashMap<String, ClassFile>();
-			for(VirtualJavaFileObject.CompiledClass clazz : fileManager.modifications) {
-				files.put(clazz.className, clazz.getFile());
-			}
-			fileManager.modifications.clear();
-			return files;
-		} else {
-			return null;
-		}
+		return task.call(); 
 	}
 }
