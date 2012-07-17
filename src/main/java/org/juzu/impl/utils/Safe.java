@@ -15,7 +15,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.spi.fs;
+package org.juzu.impl.utils;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -23,22 +26,15 @@ package org.juzu.impl.spi.fs;
  *
  * Mar 16, 2012
  */
-public class Content {
+public class Safe {
 
-	private long lastModified;
-	
-	private CharSequence value;
-	
-	public Content(long lastModified, CharSequence value) {
-		this.lastModified = lastModified;
-		this.value = value;
-	}
-	
-	public long getLastModified() {
-		return lastModified;
-	}
-	
-	public CharSequence getValue() {
-		return value;
+	public static void close(Closeable closeable) {
+		if(closeable != null) {
+			try {
+				closeable.close();
+			} catch(IOException e) {
+				
+			}
+		}
 	}
 }

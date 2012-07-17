@@ -27,7 +27,7 @@ import java.io.Writer;
 
 import javax.tools.SimpleJavaFileObject;
 
-import org.juzu.impl.spi.fs.Content;
+import org.juzu.impl.utils.Content;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -77,8 +77,8 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 			long lastModified = fs.getLastModified(file);
 			
 			if(content == null || this.lastModified < lastModified) {
-				org.juzu.impl.spi.fs.Content content = fs.getContent(file);
-				this.content = content.getValue();
+				Content content = fs.getContent(file);
+				this.content = content.getCharSequence();
 				this.lastModified = content.getLastModified();
 			}
 			
@@ -88,7 +88,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 	
 	static class RandomAccess<C> extends VirtualJavaFileObject {
 
-		protected VirtualContent<C> content;
+		protected Content<?> content;
 		
 		RandomAccess(FileKey key) {
 			super(key);
@@ -117,7 +117,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 				out = new ByteArrayOutputStream() {
 					@Override
 					public void close() throws IOException {
-						content = new VirtualContent<byte[]>(key, toByteArray());
+						content = new Content.ByteArray(System.currentTimeMillis(), toByteArray());
 						out = null;
 					}
 				};
@@ -127,7 +127,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 			@Override
 			public InputStream openInputStream() throws IOException {
 				if(content != null) {
-					return new ByteArrayInputStream(content.getValue());
+					return content.getInputStream();
 				} else {
 					throw new IOException("No content");
 				}
@@ -152,7 +152,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 				writer = new StringWriter() {
 					@Override
 					public void close() throws IOException {
-						content = new VirtualContent<CharSequence>(key, writer.toString());
+						content = new Content.CharArray(System.currentTimeMillis(), writer.toString());
 						writer = null;
 					}
 				};
@@ -162,7 +162,7 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 			@Override
 			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
 				if(content != null) {
-					return content.getValue();
+					return content.getCharSequence();
 				} else {
 					throw new IOException("No content");
 				}

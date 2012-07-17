@@ -20,6 +20,8 @@ package org.juzu.impl.spi.fs;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.juzu.impl.utils.Content;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -48,7 +50,7 @@ public interface FileSystem<P, D extends P, F extends P> {
 	
 	D asDir(P path) throws IllegalArgumentException, IOException;
 	
-	Content getContent(F file) throws IOException;
+	Content<?> getContent(F file) throws IOException;
 	
 	long getLastModified(P path) throws IOException;
 }

@@ -31,6 +31,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
 import org.juzu.impl.spi.fs.FileSystem;
+import org.juzu.impl.utils.Content;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -64,7 +65,7 @@ public class CompilerContext<P, D extends P, F extends P> {
 		return fileManager.classOutput.keySet();
 	}
 	
-	public VirtualContent<?> getClassOuput(FileKey key) {
+	public Content<?> getClassOuput(FileKey key) {
 		VirtualJavaFileObject.RandomAccess file = fileManager.classOutput.get(key);
 		return file != null ? file.content : null;
 	}
@@ -73,7 +74,7 @@ public class CompilerContext<P, D extends P, F extends P> {
 		return fileManager.sourceOutput.keySet();
 	}
 	
-	public VirtualContent<?> getSourceOutput(FileKey key) {
+	public Content<?> getSourceOutput(FileKey key) {
 		VirtualJavaFileObject.RandomAccess file = fileManager.sourceOutput.get(key);
 		return file != null ? file.content : null;
 	}

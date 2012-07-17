@@ -17,14 +17,16 @@
  */
 package org.juzu.impl.spi.fs.disk;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.juzu.impl.spi.fs.Content;
 import org.juzu.impl.spi.fs.FileSystem;
+import org.juzu.impl.utils.Content;
+import org.juzu.impl.utils.Safe;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -85,14 +87,18 @@ public class DiskFileSystem implements FileSystem<File, File, File> {
 		return child.exists() ? child : null;
 	}
 
-	public Content getContent(File file) throws IOException {
-		FileReader reader = new FileReader(file);
-		StringBuilder content = new StringBuilder();
-		char[] buff = new char[256];
-		for(int l = reader.read(buff); l != -1; l = reader.read(buff)) {
-			content.append(buff, 0, l);
+	public Content<?> getContent(File file) throws IOException {
+		FileInputStream	in = new FileInputStream(file);
+		try {
+			ByteArrayOutputStream content = new ByteArrayOutputStream();
+			byte[] bytes = new byte[256];
+			for(int l = in.read(bytes); l != -1; l = in.read(bytes)) {
+				content.write(bytes, 0, l);
+			}
+			return new Content.ByteArray(file.lastModified(), content.toByteArray());
+		} finally {
+			Safe.close(in);
 		}
-		return new Content(file.lastModified(), content.toString());
 	}
 
 	public long getLastModified(File path) throws IOException {

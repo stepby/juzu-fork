@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -38,14 +36,15 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+
 import org.juzu.impl.spi.fs.disk.DiskFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
-
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import org.juzu.impl.utils.Content;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -117,9 +116,9 @@ public class CompilationTestCase extends TestCase {
 		CompilerContext<RAMPath, RAMDir, RAMFile> ctx = new CompilerContext<RAMPath, RAMDir, RAMFile>(ramFS);
 		assertTrue(ctx.compile());
 		assertEquals(2, ctx.getClassOutputKeys().size());
-		VirtualContent aClass = ctx.getClassOuput(FileKey.newJavaName("foo.A", JavaFileObject.Kind.CLASS));
+		Content aClass = ctx.getClassOuput(FileKey.newJavaName("foo.A", JavaFileObject.Kind.CLASS));
 		assertNotNull(aClass);
-		VirtualContent bClass = ctx.getClassOuput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.CLASS));
+		Content bClass = ctx.getClassOuput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.CLASS));
 		assertNotNull(bClass);
 		
 		while(true) {

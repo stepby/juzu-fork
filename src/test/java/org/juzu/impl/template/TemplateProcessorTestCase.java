@@ -33,11 +33,11 @@ import junit.framework.TestCase;
 
 import org.juzu.impl.compiler.CompilerContext;
 import org.juzu.impl.compiler.FileKey;
-import org.juzu.impl.compiler.VirtualContent;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
+import org.juzu.impl.utils.Content;
 import org.juzu.template.Template;
 import org.juzu.text.WriterPrinter;
 
@@ -59,13 +59,13 @@ public class TemplateProcessorTestCase extends TestCase {
 		assertTrue(compiler.compile());
 		
 		//
-		VirtualContent content = compiler.getClassOuput(FileKey.newResourceName("foo", "B.groovy"));
+		Content content = compiler.getClassOuput(FileKey.newResourceName("foo", "B.groovy"));
 		assertNotNull(content);
 		assertEquals(3, compiler.getClassOutputKeys().size());
 		
 		//
 		assertEquals(1, compiler.getSourceOuputKeys().size());
-		VirtualContent content2 = compiler.getSourceOutput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.SOURCE));
+		Content content2 = compiler.getSourceOutput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.SOURCE));
 		
 		ClassLoader cl = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
 			private Map<String, Class<?>> cache = new HashMap<String, Class<?>>();
@@ -79,7 +79,7 @@ public class TemplateProcessorTestCase extends TestCase {
 					} catch(ClassNotFoundException e) {
 						try {
 							FileKey key = FileKey.newJavaName(name, JavaFileObject.Kind.CLASS);
-							VirtualContent content = (VirtualContent)compiler.getClassOuput(key);
+							Content content = (Content)compiler.getClassOuput(key);
 							if(content != null) {
 								byte[] bytes = (byte[])content.getValue();
 								clazz = defineClass(name, bytes, 0, bytes.length);
@@ -111,7 +111,7 @@ public class TemplateProcessorTestCase extends TestCase {
 						key = FileKey.newResourceName(packageName, foo);
 					}
 					
-					final VirtualContent content = compiler.getClassOuput(key);
+					final Content content = compiler.getClassOuput(key);
 					if(content != null) {
 						return new URL("foo", "foo", 0, name, new URLStreamHandler() {
 							@Override
@@ -136,7 +136,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		};
 		
 		Class<?> aClass = cl.loadClass("foo.A");
-		Class<?> bClass = cl.loadClass("foo.B");	
+		Class<?> bClass = cl.loadClass("foo.B");
 		Template template = (Template)bClass.newInstance();
 		StringWriter writer = new StringWriter();
 		template.render(new WriterPrinter(writer), null, null);
