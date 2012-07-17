@@ -30,6 +30,7 @@ import java.util.Map;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.juzu.impl.template.ASTNode;
+import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.TemplateExecutionException;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
@@ -40,37 +41,44 @@ import org.juzu.text.Printer;
  *
  * Apr 2, 2012
  */
-public class GroovyTemplate extends Template {
+public abstract class GroovyTemplate extends Template {
 	
-	private final String templateId;
-	
-	private String script;
+	protected final String templateId;
 	
 	private Class<?> scriptClass;
 	
 	private HashMap<Integer, ASTNode.Text> locationTable;
 	
-	public GroovyTemplate(String templateId, String script, HashMap<Integer, ASTNode.Text> locationTable) {
-		this.templateId = templateId;
-		this.script =  script;
-		this.scriptClass = null;
-		this.locationTable = locationTable;
+	protected GroovyTemplate() {
+		this.templateId = getClass().getName();
 	}
 	
-	public Class<?> getScriptClass() {
+	public GroovyTemplate(String templateId) {
+		this.templateId = templateId;
+		this.locationTable = null;
+		this.scriptClass = null;
+	}
+	
+	private Class<?> getScriptClass() {
 		if(scriptClass == null) {
 			CompilerConfiguration config = new CompilerConfiguration();
 			config.setScriptBaseClass(BaseScript.class.getName());
+			String script = getScript();
 			GroovyCodeSource gcs = new GroovyCodeSource(new StringReader(script), "myscript", "/groovy/shell");
 			GroovyClassLoader loader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-			scriptClass = loader.parseClass(gcs, false);
+			try {
+				scriptClass = loader.parseClass(gcs, false);
+				Class<?> constants = scriptClass.getClassLoader().loadClass("Constants");
+				locationTable = (HashMap<Integer, Text>)constants.getField("TABLE").get(null);
+			} catch(Exception e) {
+				e.printStackTrace();
+				throw new UnsupportedOperationException("handle me gracefully");
+			}
 		}
 		return scriptClass;
 	}
 	
-	public String getScript() {
-		return script;
-	}
+	public abstract String getScript();
 	
 	public String getClassName() {
 		return getScriptClass().getName();

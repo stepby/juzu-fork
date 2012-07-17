@@ -17,28 +17,40 @@
  */
 package org.juzu.impl.template.groovy;
 
-import org.juzu.text.CharArray;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Apr 2, 2012
  */
-class TextConstant {
+public abstract class GroovyTemplateLiteral extends GroovyTemplate {
 	
-	final String name;
-	
-	final String text;
-	
-	TextConstant(String name, String text) {
-		this.name = name; 
-		this.text = text;
+	public GroovyTemplateLiteral() {
 	}
-	
-	String getDeclaration() {
-		StringBuilder sb = new StringBuilder("");
-		Tools.escape(text, sb);
-		return "public static final " + CharArray.Simple.class.getName() + " " + name + " = new " + CharArray.Simple.class.getName() + "('" + sb + "');";
+
+	@Override
+	public final String getScript() {
+		try {
+			String path = templateId.replace('.', '/')  + ".groovy";
+			URL url = getClass().getClassLoader().getResource(path);
+			if(url != null) {
+				byte[] buffer = new byte[256];
+				InputStream in = url.openStream();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				for(int l = in.read(buffer); l != -1; l = in.read(buffer))	 {
+					baos.write(buffer,0 ,l);
+				}
+				return baos.toString();
+			} else {
+				System.out.println("Could not load resource " + path);
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

@@ -20,6 +20,8 @@ package org.juzu.impl.template;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -35,6 +37,7 @@ import javax.tools.StandardLocation;
 
 import org.juzu.impl.template.groovy.GroovyTemplate;
 import org.juzu.impl.template.groovy.GroovyTemplateBuilder;
+import org.juzu.impl.template.groovy.GroovyTemplateLiteral;
 import org.juzu.template.TemplateRef;
 
 /**
@@ -48,6 +51,8 @@ import org.juzu.template.TemplateRef;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class TemplateProcessor extends AbstractProcessor {
 
+	private static final Pattern NAME_PATTERN = Pattern.compile("([^.]+)\\.([a-zA-Z]+)");
+	
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		Filer filer = processingEnv.getFiler();
@@ -56,18 +61,37 @@ public class TemplateProcessor extends AbstractProcessor {
 			CharSequence pkgName = pkgElt.getQualifiedName().toString();
 			TemplateRef ref = elt.getAnnotation(TemplateRef.class);
 			String value = ref.value();
+			Matcher matcher = NAME_PATTERN.matcher(value);
+			if(!matcher.matches()) {
+				throw new UnsupportedOperationException("handle me gracefully for name " + value);
+			}
+			
+			//
+			String fqn = pkgName.length() == 0 ? value : (pkgName + "." + matcher.group(1));
+			
 			try {
 				FileObject file = filer.getResource(StandardLocation.SOURCE_PATH, pkgName, value);
 				CharSequence content = file.getCharContent(false).toString();
 				
 				//for now handle only groovy template
-				String id = pkgName.length() == 0 ? value : (pkgName + "." + value);
-				GroovyTemplate template = new TemplateParser().parse(content).build(new GroovyTemplateBuilder(id));
+				GroovyTemplate template = new TemplateParser().parse(content).build(new GroovyTemplateBuilder(fqn));
 				
 				//Now we create the template
-				FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, pkgName, value, elt);
+				FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, pkgName, matcher.group(1) + ".groovy", elt);
 				Writer writer = fo.openWriter();
 				writer.write(template.getScript());
+				writer.close();
+				
+				//Now we create the class associated with the template
+				FileObject fof = filer.createSourceFile(fqn, elt);
+				writer = fof.openWriter();
+				writer.append("package ").append(pkgName).append(";\n");
+				writer.append("public class ").append(matcher.group(1)).append(" extends ").append(GroovyTemplateLiteral.class.getName()).append("\n");
+				writer.append("{\n");
+				writer.append("public ").append(matcher.group(1)).append("()\n");
+				writer.append("{\n");
+				writer.append("}\n");
+				writer.append("}\n");
 				writer.close();
 			} catch(IOException e) {
 				e.printStackTrace();

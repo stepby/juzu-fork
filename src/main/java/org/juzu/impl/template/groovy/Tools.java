@@ -17,28 +17,22 @@
  */
 package org.juzu.impl.template.groovy;
 
-import org.juzu.text.CharArray;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Apr 2, 2012
  */
-class TextConstant {
-	
-	final String name;
-	
-	final String text;
-	
-	TextConstant(String name, String text) {
-		this.name = name; 
-		this.text = text;
-	}
-	
-	String getDeclaration() {
-		StringBuilder sb = new StringBuilder("");
-		Tools.escape(text, sb);
-		return "public static final " + CharArray.Simple.class.getName() + " " + name + " = new " + CharArray.Simple.class.getName() + "('" + sb + "');";
+class Tools {
+
+	public static void escape(CharSequence s, StringBuilder appendable) {
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c == '\n')
+				appendable.append("\\n");
+			else if(c == '\'')
+				appendable.append("\\\'");
+			else
+				appendable.append(c);
+		}
 	}
 }

@@ -19,12 +19,15 @@ package org.juzu.impl.template.groovy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.ASTNode;
+import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.SectionType;
 import org.juzu.impl.template.TemplateBuilder;
+import org.juzu.template.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -53,20 +56,58 @@ public class GroovyTemplateBuilder extends TemplateBuilder<GroovyTemplate>{
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
+		
+		//Add main stuff
 		builder.append(out.toString());
+		
+		//
 		builder.append("\n");
-		builder.append("public class Constants\n");
+		builder.append("public static class Constants\n");
 		builder.append("{\n");
+		
+		//Add text constants
 		for(TextConstant method : textMethods) {
 			builder.append(method.getDeclaration()).append("\n");
 		}
+		
+		//Add line table
+		builder.append("public static final Map<Integer, ").append(ASTNode.Text.class.getName()).append("> TABLE = ");
+		if(locationTable.isEmpty()) {
+			builder.append("[:]");
+		} else {
+			builder.append("[\n");
+			for(Iterator<Map.Entry<Integer, ASTNode.Text>> i = locationTable.entrySet().iterator(); i.hasNext();) {
+				Map.Entry<Integer, ASTNode.Text> entry = i.next();
+				ASTNode.Text text = entry.getValue();
+				Location location = text.getPosition();
+				builder.append(entry.getKey()).append(':').
+					append("new ").append(ASTNode.Text.class.getName()).append("(").
+					append("new ").append(Location.class.getName()).append("(").append(location.getCol()).append(',').append(location.getLine()).append("),").
+					append("'");
+				Tools.escape(text.getData(), builder);
+				builder.append("')");
+				if(i.hasNext()) builder.append(", \n");
+				else builder.append(']');
+			}
+		}
+		builder.append(";\n");
+		
+		//Close context
 		builder.append("}\n");
+		
+		//
 		return builder.toString();
 	}
 	
 	@Override
 	public GroovyTemplate build() {
-		return new GroovyTemplate(templateId, toString(), locationTable);
+		final String script = toString();
+		return new GroovyTemplate() {
+			@Override
+			public String getScript() {
+				return script;
+			}
+		};
 	}
 
 	@Override
