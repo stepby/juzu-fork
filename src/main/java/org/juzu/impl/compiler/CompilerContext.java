@@ -32,6 +32,7 @@ import javax.tools.ToolProvider;
 
 import org.juzu.impl.spi.fs.FileSystem;
 import org.juzu.impl.utils.Content;
+import org.juzu.impl.utils.Content.ByteArray;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -59,6 +60,14 @@ public class CompilerContext<P, D extends P, F extends P> {
 	public void addAnnotationProcessor(Processor annotationProcessorType) {
 		if(annotationProcessorType == null) throw new NullPointerException("No null processor allowed");
 		processors.add(annotationProcessorType);
+	}
+	
+	public Map<String, Content<?>> getClassOutput() {
+		Map<String, Content<?>> map = new HashMap<String, Content<?>>();
+		for(Map.Entry<FileKey, VirtualJavaFileObject.RandomAccess> entry : fileManager.classOutput.entrySet() ) {
+			map.put(entry.getKey().uri.getPath(), entry.getValue().content);
+		}
+		return map;
 	}
 	
 	public Set<FileKey> getClassOutputKeys() {

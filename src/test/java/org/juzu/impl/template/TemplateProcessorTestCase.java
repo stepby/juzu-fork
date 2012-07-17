@@ -31,6 +31,7 @@ import javax.tools.JavaFileObject;
 
 import junit.framework.TestCase;
 
+import org.juzu.impl.classloading.RAMClassLoader;
 import org.juzu.impl.compiler.CompilerContext;
 import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ram.RAMDir;
@@ -67,73 +68,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		assertEquals(1, compiler.getSourceOuputKeys().size());
 		Content content2 = compiler.getSourceOutput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.SOURCE));
 		
-		ClassLoader cl = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
-			private Map<String, Class<?>> cache = new HashMap<String, Class<?>>();
-			
-			@Override
-			protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-				Class<?> clazz = cache.get(name);
-				if(clazz == null) {
-					try {
-						clazz = super.loadClass(name, resolve);
-					} catch(ClassNotFoundException e) {
-						try {
-							FileKey key = FileKey.newJavaName(name, JavaFileObject.Kind.CLASS);
-							Content content = (Content)compiler.getClassOuput(key);
-							if(content != null) {
-								byte[] bytes = (byte[])content.getValue();
-								clazz = defineClass(name, bytes, 0, bytes.length);
-								cache.put(name, clazz);
-							}
-						} catch(IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-				} 
-				
-				if(clazz == null) {
-					throw new ClassNotFoundException("not found " + name);
-				} else {
-					return clazz;
-				}
-			}
-			
-			@Override
-			protected URL findResource(String name) {
-				try {
-					int pos = name.lastIndexOf('/');
-					FileKey key;
-					if(pos == -1) {
-						key = FileKey.newResourceName("", name);
-					} else {
-						String packageName = name.substring(0, pos).replace('/', '.');
-						String foo = name.substring(pos  + 1);
-						key = FileKey.newResourceName(packageName, foo);
-					}
-					
-					final Content content = compiler.getClassOuput(key);
-					if(content != null) {
-						return new URL("foo", "foo", 0, name, new URLStreamHandler() {
-							@Override
-							protected URLConnection openConnection(URL u) throws IOException {
-								return new URLConnection(u) {
-									@Override
-									public void connect() throws IOException {
-									}
-									@Override
-									public InputStream getInputStream() throws IOException {
-										return new ByteArrayInputStream(content.getValue().toString().getBytes());
-									}
-								};
-							}
-						});
-					}
-				} catch(IOException e) {
-					e.printStackTrace();
-				}
-				return super.findResource(name);
-			}
-		};
+		ClassLoader cl = new RAMClassLoader(Thread.currentThread().getContextClassLoader(), compiler.getClassOutput());
 		
 		Class<?> aClass = cl.loadClass("foo.A");
 		Class<?> bClass = cl.loadClass("foo.B");
