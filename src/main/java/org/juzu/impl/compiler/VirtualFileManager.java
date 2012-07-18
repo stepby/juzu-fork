@@ -44,24 +44,24 @@ import org.juzu.impl.utils.Spliterator;
  *
  * Mar 16, 2012
  */
-class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFileManager<StandardJavaFileManager>{
+class VirtualFileManager<P> extends ForwardingJavaFileManager<StandardJavaFileManager>{
 
-	final FileSystem<P, D, F> fs;
+	final FileSystem<P> fs;
 	
 	final Map<FileKey, VirtualJavaFileObject.RandomAccess> classOutput;
 	
 	final Map<FileKey, VirtualJavaFileObject.RandomAccess> sourceOutput;
 	
-	public VirtualFileManager(FileSystem<P, D, F> fs, StandardJavaFileManager fileManager) {
+	public VirtualFileManager(FileSystem<P> fs, StandardJavaFileManager fileManager) {
 		super(fileManager);
 		this.fs = fs;
 		this.classOutput = new HashMap<FileKey, VirtualJavaFileObject.RandomAccess>();
 		this.sourceOutput = new HashMap<FileKey, VirtualJavaFileObject.RandomAccess>();
 	}
 	
-	public Collection<VirtualJavaFileObject.FileSystem<P, D, F>> collectJavaFiles() throws IOException {
-		D root = fs.getRoot();
-		List<VirtualJavaFileObject.FileSystem<P, D, F>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<P, D, F>>();
+	public Collection<VirtualJavaFileObject.FileSystem<P, P, P>> collectJavaFiles() throws IOException {
+		P root = fs.getRoot();
+		List<VirtualJavaFileObject.FileSystem<P, P, P>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<P, P, P>>();
 		collectJavaFiles(root, javaFiles);
 		return javaFiles;
 	}
@@ -78,19 +78,17 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 		return null;
 	}
 	
-	private void collectJavaFiles(D dir, List<VirtualJavaFileObject.FileSystem<P, D, F>> javaFiles) throws IOException {
+	private void collectJavaFiles(P dir, List<VirtualJavaFileObject.FileSystem<P, P, P>> javaFiles) throws IOException {
 		for(Iterator<P> i = fs.getChildren(dir); i.hasNext();) {
 			P child = i.next();
 			if(fs.isFile(child)) {
 				String name = fs.getName(child);
 				if(name.endsWith(".java")) {
-					F javaFile = fs.asFile(child);
-					FileKey key = FileKey.newJavaName(fs.packageName(javaFile).toString(), fs.getName(javaFile));
-					javaFiles.add(new VirtualJavaFileObject.FileSystem<P, D, F>(fs, javaFile, key));
+					FileKey key = FileKey.newJavaName(fs.packageName(child).toString(), name);
+					javaFiles.add(new VirtualJavaFileObject.FileSystem<P, P, P>(fs, child, key));
 				}
 			} else {
-				D childDir = fs.asDir(child);
-				collectJavaFiles(childDir, javaFiles);
+				collectJavaFiles(child, javaFiles);
 			}
 		}
 	}
@@ -147,13 +145,13 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 	@Override
 	public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
 		if(location == StandardLocation.SOURCE_PATH) {
-			D current = fs.getRoot();
+			P current = fs.getRoot();
 			Spliterator s = new Spliterator(packageName, '.');
 			while(s.hasNext()) {
 				String name = s.next();
 				P child = fs.getChild(current, name);
 				if(child != null || fs.isDir(child)) {
-					current = fs.asDir(child);
+					current = child;
 				} else {
 					current = null;
 					break;
@@ -162,9 +160,9 @@ class VirtualFileManager<P, D extends P, F extends P> extends ForwardingJavaFile
 			if(current != null) {
 				P child = fs.getChild(current, relativeName);
 				if(child != null && fs.isFile(child)) {
-					F file = fs.asFile(child);
+					P file = child;
 					FileKey uri = FileKey.newResourceName(fs.packageName(file).toString(), fs.getName(file));
-					return new VirtualJavaFileObject.FileSystem<P, D, F>(fs, file, uri);
+					return new VirtualJavaFileObject.FileSystem<P, P, P>(fs, file, uri);
 				}
 			}
 			throw new IllegalArgumentException("Could not locate pkg=" + packageName + " name=" + relativeName);

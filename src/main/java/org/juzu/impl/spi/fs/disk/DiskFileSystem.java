@@ -34,7 +34,7 @@ import org.juzu.impl.utils.Safe;
  *
  * Mar 16, 2012
  */
-public class DiskFileSystem extends FileSystem<File, File, File> {
+public class DiskFileSystem extends FileSystem<File> {
 	
 	private final File root;
 	
@@ -72,16 +72,6 @@ public class DiskFileSystem extends FileSystem<File, File, File> {
 		return path.isFile();
 	}
 
-	public File asFile(File path) throws IllegalArgumentException, IOException {
-		if(!path.isFile()) throw new IllegalArgumentException("File " + path + " is not a file");
-		return path;
-	}
-
-	public File asDir(File path) throws IllegalArgumentException, IOException {
-		if(!path.isDirectory()) throw new IllegalArgumentException("File " + path + " is not a directory");
-		return path;
-	}
-	
 	public File getChild(File dir, String name) throws IOException {
 		File child = new File(dir, name);
 		return child.exists() ? child : null;

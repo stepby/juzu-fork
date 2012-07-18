@@ -41,7 +41,7 @@ public class DiskFileSystemTestCase extends TestCase {
 		doTest(new DiskFileSystem(file), file);
 	}
 	
-	private <P, D extends P, F extends P> void doTest(FileSystem<P, D, F> fs, D root) throws IOException {
+	private <P, D extends P, F extends P> void doTest(FileSystem<P> fs, D root) throws IOException {
 		assertEquals(root, fs.getRoot());
 		
 		assertTrue(fs.isDir(root));
@@ -58,7 +58,7 @@ public class DiskFileSystemTestCase extends TestCase {
 		assertEquals("org", fs.getName(org));
 		assertEquals(root, fs.getParent(org));
 		
-		Iterator<P> orgChildren = fs.getChildren(fs.asDir(org));
+		Iterator<P> orgChildren = fs.getChildren(org);
 		assertTrue(orgChildren.hasNext());
 		P juzu = orgChildren.next();
 		assertFalse(orgChildren.hasNext());
@@ -67,7 +67,7 @@ public class DiskFileSystemTestCase extends TestCase {
 		assertEquals("juzu", fs.getName(juzu));
 		assertEquals(org, fs.getParent(juzu));
 		
-		Iterator<P> juzuChildren = fs.getChildren(fs.asDir(juzu));
+		Iterator<P> juzuChildren = fs.getChildren(juzu);
 		assertTrue(juzuChildren.hasNext());
 		P a = juzuChildren.next();
 		assertFalse(juzuChildren.hasNext());

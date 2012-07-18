@@ -29,7 +29,7 @@ import org.juzu.impl.utils.Content;
  *
  * Mar 16, 2012
  */
-public class RAMFileSystem extends FileSystem<RAMPath, RAMDir, RAMFile> {
+public class RAMFileSystem extends FileSystem<RAMPath> {
 	
 	private final RAMDir root;
 	
@@ -53,8 +53,12 @@ public class RAMFileSystem extends FileSystem<RAMPath, RAMDir, RAMFile> {
 		return path.getName();
 	}
 
-	public Iterator<RAMPath> getChildren(RAMDir dir) throws IOException {
-		return dir.children.values().iterator();
+	public Iterator<RAMPath> getChildren(RAMPath dir) throws IOException {
+		return ((RAMDir)dir).children.values().iterator();
+	}
+	
+	public RAMPath getChild(RAMPath dir, String name) throws IOException {
+		return ((RAMDir)dir).children.get(name);
 	}
 
 	public boolean isDir(RAMPath path) throws IOException {
@@ -65,23 +69,11 @@ public class RAMFileSystem extends FileSystem<RAMPath, RAMDir, RAMFile> {
 		return path instanceof RAMFile;
 	}
 
-	public RAMFile asFile(RAMPath path) throws IllegalArgumentException, IOException {
-		return (RAMFile)path;
-	}
-
-	public RAMDir asDir(RAMPath path) throws IllegalArgumentException, IOException {
-		return (RAMDir)path;
-	}
-
-	public Content<?> getContent(RAMFile file) throws IOException {
-		return file.getContent();
+	public Content<?> getContent(RAMPath file) throws IOException {
+		return ((RAMFile)file).getContent();
 	}
 
 	public long getLastModified(RAMPath path) throws IOException {
 		return path.getLastModified();
-	}
-
-	public RAMPath getChild(RAMDir dir, String name) throws IOException {
-		return dir.children.get(name);
 	}
 }

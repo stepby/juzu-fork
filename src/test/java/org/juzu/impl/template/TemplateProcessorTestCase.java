@@ -56,7 +56,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		RAMDir foo = root.addDir("foo");
 		RAMFile a = foo.addFile("A.java").update("package foo; public class A { @org.juzu.template.TemplateRef(\"B.gtmpl\") org.juzu.template.TemplateRenderer template; }");
 		RAMFile b = foo.addFile("B.gtmpl").update("<% out.print('hello') %>");
-		final CompilerContext<RAMPath, RAMDir, RAMFile> compiler = new CompilerContext<RAMPath, RAMDir, RAMFile>(ramFS);
+		final CompilerContext<RAMPath> compiler = new CompilerContext<RAMPath>(ramFS);
 		compiler.addAnnotationProcessor(new TemplateProcessor());
 		assertTrue(compiler.compile());
 		

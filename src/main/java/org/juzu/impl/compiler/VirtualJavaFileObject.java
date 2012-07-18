@@ -47,13 +47,13 @@ class VirtualJavaFileObject extends SimpleJavaFileObject {
 		
 		private final F file;
 		
-		private final org.juzu.impl.spi.fs.FileSystem<P, D, F> fs;
+		private final org.juzu.impl.spi.fs.FileSystem<P> fs;
 		
 		private CharSequence content;
 		
 		private long lastModified;
 
-		FileSystem(org.juzu.impl.spi.fs.FileSystem<P, D, F> fs, F file,  FileKey key) throws IOException {
+		FileSystem(org.juzu.impl.spi.fs.FileSystem<P> fs, F file,  FileKey key) throws IOException {
 			super(key);
 			this.fs = fs;
 			this.file = file;
