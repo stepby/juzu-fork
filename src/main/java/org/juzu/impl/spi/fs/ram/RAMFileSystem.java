@@ -29,7 +29,7 @@ import org.juzu.impl.utils.Content;
  *
  * Mar 16, 2012
  */
-public class RAMFileSystem implements FileSystem<RAMPath, RAMDir, RAMFile> {
+public class RAMFileSystem extends FileSystem<RAMPath, RAMDir, RAMFile> {
 	
 	private final RAMDir root;
 	

@@ -34,7 +34,7 @@ import org.juzu.impl.utils.Safe;
  *
  * Mar 16, 2012
  */
-public class DiskFileSystem implements FileSystem<File, File, File> {
+public class DiskFileSystem extends FileSystem<File, File, File> {
 	
 	private final File root;
 	

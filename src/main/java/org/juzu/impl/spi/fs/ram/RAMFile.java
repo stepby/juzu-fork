@@ -20,7 +20,6 @@ package org.juzu.impl.spi.fs.ram;
 import java.io.IOException;
 
 import org.juzu.impl.utils.Content;
-import org.juzu.impl.utils.Safe;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
