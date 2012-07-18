@@ -15,21 +15,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.template;
+package org.juzu.impl.spi.template;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.io.IOException;
 
-import javax.inject.Qualifier;
+import javax.annotation.processing.Filer;
+
+import org.juzu.impl.template.ASTNode;
+import org.juzu.impl.template.SectionType;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * May 21, 2012
+ * Mar 28, 2012
  */
-@Qualifier
-@Retention(RetentionPolicy.RUNTIME)
-public @interface TemplateRef {
-	String value();
+public abstract class TemplateGenerator {
+
+	public abstract void startScriptlet();
+	
+	public abstract void appendScriptlet(ASTNode.Text scriptlet);
+	
+	public abstract void endScriptlet();
+	
+	public abstract void startExpression();
+	
+	public abstract void appendExpression(ASTNode.Text expr);
+	
+	public abstract void endExpression();
+	
+	public abstract void appendText(String text);
+	
+	public abstract void appendLineBreak(SectionType currentType);
+	
+	public abstract void generate(Filer filer, String pkgName, String rawName) throws IOException;
 }

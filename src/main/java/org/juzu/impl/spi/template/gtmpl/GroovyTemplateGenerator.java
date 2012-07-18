@@ -15,18 +15,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.groovy;
+package org.juzu.impl.spi.template.gtmpl;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.processing.Filer;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+
+import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.SectionType;
-import org.juzu.impl.template.TemplateBuilder;
+import org.juzu.impl.utils.Safe;
 import org.juzu.template.Location;
 
 /**
@@ -35,9 +42,7 @@ import org.juzu.template.Location;
  *
  * Apr 2, 2012
  */
-public class GroovyTemplateBuilder extends TemplateBuilder<GroovyTemplate>{
-	
-	private final String templateId;
+public class GroovyTemplateGenerator extends TemplateGenerator {
 	
 	private StringBuilder out = new StringBuilder();
 	
@@ -49,8 +54,7 @@ public class GroovyTemplateBuilder extends TemplateBuilder<GroovyTemplate>{
 	
 	private int lineNumber = 1;
 	
-	public GroovyTemplateBuilder(String templateId) {
-		this.templateId = templateId;
+	public GroovyTemplateGenerator() {
 	}
 	
 	@Override
@@ -99,10 +103,9 @@ public class GroovyTemplateBuilder extends TemplateBuilder<GroovyTemplate>{
 		return builder.toString();
 	}
 	
-	@Override
-	public GroovyTemplate build() {
+	public GroovyTemplate build(String templateId) {
 		final String script = toString();
-		return new GroovyTemplate() {
+		return new GroovyTemplate(templateId) {
 			@Override
 			public String getScript() {
 				return script;
@@ -164,6 +167,36 @@ public class GroovyTemplateBuilder extends TemplateBuilder<GroovyTemplate>{
 				break;
 			default:
 				throw new AssertionError();
+		}
+	}
+
+	@Override
+	public void generate(Filer filer, String pkgName, String rawName) throws IOException {
+		String script = toString();	
+		
+		//Create the groovy file
+		FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, pkgName, rawName + ".groovy");
+		Writer writer = fo.openWriter();
+		try {
+			writer.write(script);
+		} finally {
+			Safe.close(writer	);
+		}
+		
+		//create the class associated with the template
+		String fqn = pkgName.length() == 0 ? rawName : pkgName + "." + rawName;
+		FileObject fof = filer.createSourceFile(fqn);
+		writer = fof.openWriter(); 
+		try {
+			writer.append("package ").append(pkgName).append(";\n");
+			writer.append("public class ").append(rawName).append(" extends ").append(GroovyTemplateLiteral.class.getName()).append("\n");
+			writer.append("{\n");
+			writer.append("public ").append(rawName).append("()\n");
+			writer.append("{\n");
+			writer.append("}\n");
+			writer.append("}\n");
+		} finally {
+			Safe.close(writer);
 		}
 	}
 }

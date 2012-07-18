@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.template.Location;
 
 /**
@@ -55,8 +56,8 @@ public abstract class ASTNode {
 			return sections;
 		}
 		
-		public <T extends org.juzu.template.Template> T build(TemplateBuilder<T> builder) {
-			BuilderContext ctx = new BuilderContext(builder);
+		public void generate(TemplateGenerator generator) {
+			GeneratorContext ctx = new GeneratorContext(generator);
 			for(ASTNode.Section section : sections) {
 				ctx.begin(section.getType());
 				for(ASTNode item : section.getItems()) {
@@ -64,18 +65,17 @@ public abstract class ASTNode {
 				}
 				ctx.end();
 			}
-			return builder.build();
 		}
 		
-		private class BuilderContext {
+		private class GeneratorContext {
 			
 			private SectionType currentType = null;
 			
 			private StringBuilder accumulateText = new StringBuilder();
 			
-			private TemplateBuilder<?> writer;
+			private TemplateGenerator writer;
 			
-			BuilderContext(TemplateBuilder <?>writer) {
+			GeneratorContext(TemplateGenerator writer) {
 				this.writer = writer;
 			}
 			

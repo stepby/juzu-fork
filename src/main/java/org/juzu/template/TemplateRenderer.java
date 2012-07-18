@@ -15,26 +15,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.utils;
+package org.juzu.template;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
+
+import org.juzu.impl.spi.template.TemplateStub;
+import org.juzu.impl.template.TemplateExecutionException;
+import org.juzu.text.Printer;
+import org.juzu.text.WriterPrinter;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 16, 2012
  */
-public class Safe {
+public class TemplateRenderer {
 
-	public static void close(Closeable closeable) {
-		if(closeable != null) {
+	private final String templateId;
+	
+	private TemplateStub stub;
+	
+	public TemplateRenderer(String templateId) {
+		this.stub = null;
+		this.templateId = templateId;
+	}
+	
+	public void render(Map<String, ?> context, Locale locale) throws TemplateExecutionException, IOException {
+		if(stub == null) {
 			try {
-				closeable.close();
-			} catch(IOException e) {
-				e.printStackTrace();
+				ClassLoader cl = Thread.currentThread().getContextClassLoader();
+				Class<?> stubClass = cl.loadClass(templateId);
+				stub = (TemplateStub)stubClass.newInstance();
+			} catch(Exception e) {
+				throw new UnsupportedOperationException("handle me gracefully");
 			}
 		}
+		
+		Printer printer = new WriterPrinter(System.out);
+		stub.render(printer, context, locale);
 	}
 }

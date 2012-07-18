@@ -17,14 +17,20 @@
  */
 package org.juzu.impl.template;
 
+import groovyjarjarantlr.Parser;
+
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -35,10 +41,12 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.juzu.impl.template.groovy.GroovyTemplate;
-import org.juzu.impl.template.groovy.GroovyTemplateBuilder;
-import org.juzu.impl.template.groovy.GroovyTemplateLiteral;
-import org.juzu.template.TemplateRef;
+import org.juzu.impl.spi.template.TemplateGenerator;
+import org.juzu.impl.spi.template.TemplateProvider;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplate;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplateGenerator;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplateLiteral;
+import org.juzu.template.Template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -47,19 +55,45 @@ import org.juzu.template.TemplateRef;
  * May 21, 2012
  */
 
-@SupportedAnnotationTypes({ "org.juzu.template.TemplateRef" })
+@SupportedAnnotationTypes({ "org.juzu.template.Template" })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class TemplateProcessor extends AbstractProcessor {
-
+	
+	private static final Pattern PROVIDER_PKG_PATTERN = Pattern.compile(
+		"org\\.juzu\\.impl\\.spi\\.template\\.([^.]+)(?:\\..+)?"
+	);
+	
 	private static final Pattern NAME_PATTERN = Pattern.compile("([^.]+)\\.([a-zA-Z]+)");
 	
+	private Map<String, TemplateProvider> providers;
+	
+	@Override
+	public void init(ProcessingEnvironment processingEnv) {
+		super.init(processingEnv);
+		
+		//Discover the template provider
+		ServiceLoader<TemplateProvider> loader = ServiceLoader.load(TemplateProvider.class);
+		Map<String, TemplateProvider> providers = new HashMap<String, TemplateProvider>();
+		for(TemplateProvider provider : loader) {
+			String pkgName = provider.getClass().getPackage().getName();
+			Matcher matcher = PROVIDER_PKG_PATTERN.matcher(pkgName);
+			if(matcher.matches()) {
+				String extension = matcher.group(1);
+				providers.put(extension, provider);
+			}
+		}
+		this.providers = providers;
+	}
+
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+		TemplateParser parser = new TemplateParser();
 		Filer filer = processingEnv.getFiler();
-		for(Element elt : roundEnv.getElementsAnnotatedWith(TemplateRef.class)) {
+		
+		for(Element elt : roundEnv.getElementsAnnotatedWith(Template.class)) {
 			PackageElement pkgElt = processingEnv.getElementUtils().getPackageOf(elt);
 			CharSequence pkgName = pkgElt.getQualifiedName().toString();
-			TemplateRef ref = elt.getAnnotation(TemplateRef.class);
+			Template ref = elt.getAnnotation(Template.class);
 			String value = ref.value();
 			Matcher matcher = NAME_PATTERN.matcher(value);
 			if(!matcher.matches()) {
@@ -73,26 +107,15 @@ public class TemplateProcessor extends AbstractProcessor {
 				FileObject file = filer.getResource(StandardLocation.SOURCE_PATH, pkgName, value);
 				CharSequence content = file.getCharContent(false).toString();
 				
-				//for now handle only groovy template
-				GroovyTemplate template = new TemplateParser().parse(content).build(new GroovyTemplateBuilder(fqn));
-				
-				//Now we create the template
-				FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, pkgName, matcher.group(1) + ".groovy", elt);
-				Writer writer = fo.openWriter();
-				writer.write(template.getScript());
-				writer.close();
-				
-				//Now we create the class associated with the template
-				FileObject fof = filer.createSourceFile(fqn, elt);
-				writer = fof.openWriter();
-				writer.append("package ").append(pkgName).append(";\n");
-				writer.append("public class ").append(matcher.group(1)).append(" extends ").append(GroovyTemplateLiteral.class.getName()).append("\n");
-				writer.append("{\n");
-				writer.append("public ").append(matcher.group(1)).append("()\n");
-				writer.append("{\n");
-				writer.append("}\n");
-				writer.append("}\n");
-				writer.close();
+				String extension = matcher.group(2);
+				TemplateProvider provider = providers.get(extension);
+				if(provider != null) {
+					TemplateGenerator generator = provider.newGenerator();
+					parser.parse(content).generate(generator);
+					generator.generate(filer, pkgName.toString(), matcher.group(1));
+				} else {
+					throw new UnsupportedOperationException("handle me gracefully");
+				}
 			} catch(IOException e) {
 				e.printStackTrace();
 			}

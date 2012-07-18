@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.juzu.impl.template.groovy.GroovyTemplate;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplate;
 import org.juzu.text.WriterPrinter;
 
 /**

@@ -17,12 +17,11 @@
  */
 package org.juzu.template;
 
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import org.juzu.impl.template.TemplateExecutionException;
-import org.juzu.text.Printer;
+import javax.inject.Qualifier;
+
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -30,7 +29,8 @@ import org.juzu.text.Printer;
  *
  * Mar 28, 2012
  */
-public abstract class Template {
-
-	public abstract void render(Printer printer, Map<String, ?> context, Locale locale) throws TemplateExecutionException, IOException;
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Template {
+	String value();
 }

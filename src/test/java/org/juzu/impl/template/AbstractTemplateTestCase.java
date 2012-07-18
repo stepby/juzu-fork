@@ -23,8 +23,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-import org.juzu.impl.template.groovy.GroovyTemplate;
-import org.juzu.impl.template.groovy.GroovyTemplateBuilder;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplate;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplateGenerator;
 import org.juzu.text.WriterPrinter;
 
 import junit.framework.TestCase;
@@ -39,9 +39,9 @@ public abstract class AbstractTemplateTestCase extends TestCase {
 
 	public GroovyTemplate template(String text) {
 		TemplateParser parser = new TemplateParser();
-		GroovyTemplateBuilder templateWriter = new GroovyTemplateBuilder("template_" + Math.abs(new Random().nextLong()));
-		parser.parse(text).build(templateWriter);
-		return templateWriter.build();
+		GroovyTemplateGenerator templateWriter = new GroovyTemplateGenerator();
+		parser.parse(text).generate(templateWriter);
+		return templateWriter.build("template_" + Math.abs(new Random().nextLong()));
 	}
 	
 	public String render(String text, Map<String, ?> binding, Locale locale) throws IOException, TemplateExecutionException {

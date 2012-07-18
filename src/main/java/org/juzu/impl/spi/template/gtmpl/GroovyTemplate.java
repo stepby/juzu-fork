@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.groovy;
+package org.juzu.impl.spi.template.gtmpl;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -29,10 +29,10 @@ import java.util.Map;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.juzu.impl.spi.template.TemplateStub;
 import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.TemplateExecutionException;
-import org.juzu.template.Template;
 import org.juzu.text.Printer;
 
 /**
@@ -41,7 +41,7 @@ import org.juzu.text.Printer;
  *
  * Apr 2, 2012
  */
-public abstract class GroovyTemplate extends Template {
+public abstract class GroovyTemplate extends TemplateStub {
 	
 	protected final String templateId;
 	

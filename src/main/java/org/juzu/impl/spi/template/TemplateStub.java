@@ -15,30 +15,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.groovy;
+package org.juzu.impl.spi.template;
 
-import org.juzu.text.CharArray;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
+
+import org.juzu.impl.template.TemplateExecutionException;
+import org.juzu.text.Printer;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Apr 2, 2012
+ * Mar 28, 2012
  */
-class TextConstant {
-	
-	final String name;
-	
-	final String text;
-	
-	TextConstant(String name, String text) {
-		this.name = name; 
-		this.text = text;
-	}
-	
-	String getDeclaration() {
-		StringBuilder sb = new StringBuilder("");
-		Tools.escape(text, sb);
-		return "public static final " + CharArray.Simple.class.getName() + " " + name + " = new " + CharArray.Simple.class.getName() + "('" + sb + "');";
-	}
+public abstract class TemplateStub {
+
+	public abstract void render(Printer printer, Map<String, ?> context, Locale locale) throws TemplateExecutionException, IOException;
 }

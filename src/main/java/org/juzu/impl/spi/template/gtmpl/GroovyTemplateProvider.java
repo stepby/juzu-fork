@@ -15,42 +15,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template.groovy;
+package org.juzu.impl.spi.template.gtmpl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import org.juzu.impl.spi.template.TemplateGenerator;
+import org.juzu.impl.spi.template.TemplateProvider;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class GroovyTemplateLiteral extends GroovyTemplate {
-	
-	public GroovyTemplateLiteral() {
-	}
+public class GroovyTemplateProvider extends TemplateProvider {
 
 	@Override
-	public final String getScript() {
-		try {
-			String path = templateId.replace('.', '/')  + ".groovy";
-			URL url = getClass().getClassLoader().getResource(path);
-			if(url != null) {
-				byte[] buffer = new byte[256];
-				InputStream in = url.openStream();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				for(int l = in.read(buffer); l != -1; l = in.read(buffer))	 {
-					baos.write(buffer,0 ,l);
-				}
-				return baos.toString();
-			} else {
-				System.out.println("Could not load resource " + path);
-			}
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public TemplateGenerator newGenerator() {
+		return new GroovyTemplateGenerator();
 	}
 }

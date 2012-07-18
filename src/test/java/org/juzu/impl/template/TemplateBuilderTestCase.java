@@ -21,8 +21,8 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Random;
 
-import org.juzu.impl.template.groovy.GroovyTemplate;
-import org.juzu.impl.template.groovy.GroovyTemplateBuilder;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplate;
+import org.juzu.impl.spi.template.gtmpl.GroovyTemplateGenerator;
 import org.juzu.text.WriterPrinter;
 
 import junit.framework.TestCase;
@@ -37,9 +37,9 @@ public class TemplateBuilderTestCase extends TestCase {
 
 	public void testFoo() throws Exception {
 		TemplateParser parser = new TemplateParser();
-		GroovyTemplateBuilder templateBuilder = new GroovyTemplateBuilder("template_" + Math.abs(new Random().nextLong()));
-		parser.parse("a<%=foo%>c").build(templateBuilder);
-		GroovyTemplate template = templateBuilder.build();
+		GroovyTemplateGenerator templateBuilder = new GroovyTemplateGenerator();
+		parser.parse("a<%=foo%>c").generate(templateBuilder);
+		GroovyTemplate template = templateBuilder.build("template_" + Math.abs(new Random().nextLong()));
 		StringWriter out = new StringWriter();
 		template.render(new WriterPrinter(out), Collections.<String, Object>singletonMap("foo", "b"), null);
 		assertEquals("abc", out.toString());

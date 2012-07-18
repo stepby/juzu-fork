@@ -38,6 +38,7 @@ import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
+import org.juzu.impl.spi.template.TemplateStub;
 import org.juzu.impl.utils.Content;
 import org.juzu.template.Template;
 import org.juzu.text.WriterPrinter;
@@ -53,7 +54,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		RAMFileSystem ramFS = new RAMFileSystem();
 		RAMDir root = ramFS.getRoot();
 		RAMDir foo = root.addDir("foo");
-		RAMFile a = foo.addFile("A.java").update("package foo; public class A { @org.juzu.template.TemplateRef(\"B.gtmpl\") Object template; }");
+		RAMFile a = foo.addFile("A.java").update("package foo; public class A { @org.juzu.template.TemplateRef(\"B.gtmpl\") org.juzu.template.TemplateRenderer template; }");
 		RAMFile b = foo.addFile("B.gtmpl").update("<% out.print('hello') %>");
 		final CompilerContext<RAMPath, RAMDir, RAMFile> compiler = new CompilerContext<RAMPath, RAMDir, RAMFile>(ramFS);
 		compiler.addAnnotationProcessor(new TemplateProcessor());
@@ -72,7 +73,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		
 		Class<?> aClass = cl.loadClass("foo.A");
 		Class<?> bClass = cl.loadClass("foo.B");
-		Template template = (Template)bClass.newInstance();
+		TemplateStub template = (TemplateStub) bClass.newInstance();
 		StringWriter writer = new StringWriter();
 		template.render(new WriterPrinter(writer), null, null);
 		assertEquals("hello", writer.toString());
