@@ -66,7 +66,7 @@ public class TemplateProcessor extends AbstractProcessor {
 		super.init(processingEnv);
 		
 		//Discover the template provider
-		ServiceLoader<TemplateProvider> loader = ServiceLoader.load(TemplateProvider.class);
+		ServiceLoader<TemplateProvider> loader = ServiceLoader.load(TemplateProvider.class, TemplateProvider.class.getClassLoader());
 		Map<String, TemplateProvider> providers = new HashMap<String, TemplateProvider>();
 		for(TemplateProvider provider : loader) {
 			String pkgName = provider.getClass().getPackage().getName();
@@ -95,8 +95,6 @@ public class TemplateProcessor extends AbstractProcessor {
 			}
 			
 			//
-			String fqn = pkgName.length() == 0 ? value : (pkgName + "." + matcher.group(1));
-			
 			try {
 				FileObject file = filer.getResource(StandardLocation.SOURCE_PATH, pkgName, value);
 				CharSequence content = file.getCharContent(false).toString();

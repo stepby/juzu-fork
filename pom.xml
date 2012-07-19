@@ -8,27 +8,36 @@
 	<version>1.0</version>
 	<packaging>pom</packaging>
 
-	<dependencies>
-
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>1.7.6</version>
-		</dependency>
-    
-        <dependency>
-          <groupId>javax.inject</groupId>
-          <artifactId>javax.inject</artifactId>
-          <version>1</version>
-        </dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.juzu.fork</groupId>
+				<artifactId>juzu-core</artifactId>
+				<version>1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.juzu.fork</groupId>
+				<artifactId>juzu-sample</artifactId>
+				<version>1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<version>1.7.6</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.inject</groupId>
+				<artifactId>javax.inject</artifactId>
+				<version>1</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.8.2</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<plugins>
@@ -56,5 +65,6 @@
 
 	<modules>
 		<module>core</module>
+		<module>sample</module>
 	</modules>
 </project>
