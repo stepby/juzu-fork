@@ -46,14 +46,12 @@ public class Spliterator implements Iterator<String> {
 		this.to = null;
 	}
 	
-	public static List<String> split(String s, char seperator) throws NullPointerException {
-		LinkedList<String> list = new LinkedList<String>();
-		Spliterator iterator = new Spliterator(s, seperator);
-		while(iterator.hasNext()) {
-			String next = iterator.next();
-			list.add(next);
-		}
-		return list;
+	public static Iterable<String> split(final String s, final char seperator) throws NullPointerException {
+		return new Iterable<String>() {
+			public Iterator<String> iterator() {
+				return new Spliterator(s, seperator);
+			}
+		};
 	}
 
 	public boolean hasNext() {

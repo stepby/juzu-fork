@@ -61,7 +61,7 @@ public class FileKey {
 		return new FileKey(packageName, rawName, kind);
 	}
 	
-	final List<String> packageNames;
+	final Iterable<String> packageNames;
 	
 	final String packageFQN;
 	
@@ -87,7 +87,7 @@ public class FileKey {
 			fqn = packageFQN + "." + rawName;
 		}
 		try {
-			this.packageNames = Collections.unmodifiableList(Spliterator.split(packageFQN, '.'));
+			this.packageNames = Spliterator.split(packageFQN, '.');
 			this.packageFQN = packageFQN;
 			this.kind =kind;
 			this.uri = new URI(path);
