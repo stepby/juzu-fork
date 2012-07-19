@@ -55,13 +55,9 @@ public abstract class RAMPath {
 		return parent;
 	}
 	
-	public long getLastModified() {
-		return lastModified;
-	}
+	public abstract long getLastModified();
 	
-	public void touch() {
-		lastModified = System.currentTimeMillis();
-	}
+	public abstract void touch();
 	
 	public void remove() {
 		if(name.length() == 0) {

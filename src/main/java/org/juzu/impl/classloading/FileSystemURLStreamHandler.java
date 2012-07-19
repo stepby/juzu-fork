@@ -21,30 +21,35 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.util.Map;
+import java.util.List;
 
+import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.utils.Content;
+import org.juzu.impl.utils.Spliterator;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class RAMURLStreamHandler extends URLStreamHandler {
+public class FileSystemURLStreamHandler<P> extends URLStreamHandler {
 
-	private Map<String, Content<?>> contentMap;
+	private ReadFileSystem<P> fs;
 	
-	public RAMURLStreamHandler(Map<String, Content<?>> contentMap) {
-		this.contentMap = contentMap;
+	public FileSystemURLStreamHandler(ReadFileSystem<P> fs) {
+		this.fs = fs;
 	}
 	
 	@Override
 	protected URLConnection openConnection(URL u) throws IOException {
-		String path = u.getPath();
-		Content<?> content = contentMap.get(path);
-		if(content == null) {
-			throw new IOException("Could not connect to non existing content " + path);
+		List<String> names = Spliterator.split(u.getPath().substring(1), '/');
+		P path = fs.getPath(names);
+		if(path != null && fs.isFile(path)) {
+			Content<?> content = fs.getContent(path);
+			if(content != null) {
+				return new FileSystemURLConnection(u, content);
+			}
 		}
-		return new RAMURLConnection(u, content);
+		throw new IOException("Could not connect non existing content " + names);
 	}
 }

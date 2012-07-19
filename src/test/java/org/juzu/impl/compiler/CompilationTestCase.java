@@ -56,7 +56,7 @@ public class CompilationTestCase extends TestCase {
 	
 	public void testBar() throws Exception {
 		File root = new File(System.getProperty("test.resources"));
-		CompilerContext<File> ctx = new CompilerContext<File>(new DiskFileSystem(root));
+		CompilerContext<File, ?> ctx = new CompilerContext<File, RAMPath>(new DiskFileSystem(root), new RAMFileSystem());
 		assertTrue(ctx.compile());
 		assertEquals(1, ctx.getClassOutputKeys().size());
 	}
@@ -89,7 +89,7 @@ public class CompilationTestCase extends TestCase {
 			}
 		}
 		
-		CompilerContext<RAMPath> compiler = new CompilerContext<RAMPath>(ramFS);
+		CompilerContext<RAMPath, RAMPath> compiler = new CompilerContext<RAMPath, RAMPath>(ramFS, new RAMFileSystem());
 		ProcessorImpl processor = new ProcessorImpl();
 		compiler.addAnnotationProcessor(processor);
 		assertTrue(compiler.compile());
@@ -113,7 +113,7 @@ public class CompilationTestCase extends TestCase {
 		RAMFile a = foo.addFile("A.java").update("package foo; public class A {}");
 		RAMFile b = foo.addFile("B.java").update("package foo; public class B {}");
 		
-		CompilerContext<RAMPath> ctx = new CompilerContext<RAMPath>(ramFS);
+		CompilerContext<RAMPath, ?> ctx = new CompilerContext<RAMPath, RAMPath>(ramFS, new RAMFileSystem());
 		assertTrue(ctx.compile());
 		assertEquals(2, ctx.getClassOutputKeys().size());
 		Content aClass = ctx.getClassOuput(FileKey.newJavaName("foo.A", JavaFileObject.Kind.CLASS));
@@ -176,7 +176,7 @@ public class CompilationTestCase extends TestCase {
 		RAMDir root = ramFS.getRoot();
 		RAMFile a = root.addFile("A.java").update("public class A { }");
 		
-		CompilerContext<RAMPath> compiler = new CompilerContext<RAMPath>(ramFS);
+		CompilerContext<RAMPath, ?> compiler = new CompilerContext<RAMPath, RAMPath>(ramFS, new RAMFileSystem());
 		ProcessorImpl processor = new ProcessorImpl();
 		compiler.addAnnotationProcessor(processor);
 		assertTrue(compiler.compile());

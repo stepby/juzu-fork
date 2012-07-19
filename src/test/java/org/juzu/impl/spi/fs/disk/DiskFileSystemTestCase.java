@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.juzu.impl.spi.fs.FileSystem;
+import org.juzu.impl.spi.fs.ReadFileSystem;
 
 import junit.framework.TestCase;
 
@@ -41,7 +41,7 @@ public class DiskFileSystemTestCase extends TestCase {
 		doTest(new DiskFileSystem(file), file);
 	}
 	
-	private <P, D extends P, F extends P> void doTest(FileSystem<P> fs, D root) throws IOException {
+	private <P> void doTest(ReadFileSystem<P> fs, P root) throws IOException {
 		assertEquals(root, fs.getRoot());
 		
 		assertTrue(fs.isDir(root));

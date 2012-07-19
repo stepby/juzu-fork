@@ -20,7 +20,7 @@ package org.juzu.impl.spi.fs.ram;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.juzu.impl.spi.fs.FileSystem;
+import org.juzu.impl.spi.fs.ReadWriteFileSystem;
 import org.juzu.impl.utils.Content;
 
 /**
@@ -29,7 +29,7 @@ import org.juzu.impl.utils.Content;
  *
  * Mar 16, 2012
  */
-public class RAMFileSystem extends FileSystem<RAMPath> {
+public class RAMFileSystem extends ReadWriteFileSystem<RAMPath> {
 	
 	private final RAMDir root;
 	
@@ -75,5 +75,20 @@ public class RAMFileSystem extends FileSystem<RAMPath> {
 
 	public long getLastModified(RAMPath path) throws IOException {
 		return path.getLastModified();
+	}
+
+	@Override
+	public RAMPath addDir(RAMPath parent, String name) throws IOException {
+		return ((RAMDir) parent).addDir(name);
+	}
+
+	@Override
+	public RAMPath addFile(RAMPath parent, String name) throws IOException {
+		return ((RAMDir) parent).addFile(name);
+	}
+
+	@Override
+	public void setContent(RAMPath file, Content<?> content) throws IOException {
+		((RAMFile) file).update(content);
 	}
 }

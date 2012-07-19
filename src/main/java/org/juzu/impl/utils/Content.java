@@ -45,6 +45,8 @@ public abstract class Content<V> {
 	
 	public abstract V getValue();
 	
+	public abstract Content<V> touch();
+	
 	public static class CharArray extends Content<CharSequence> {
 		
 		private final CharSequence value;
@@ -69,6 +71,11 @@ public abstract class Content<V> {
 		@Override
 		public CharSequence getCharSequence() {
 			return value;
+		}
+		
+		@Override
+		public Content<CharSequence> touch() {
+			return new CharArray(System.currentTimeMillis(), value);
 		}
 
 		@Override
@@ -106,6 +113,11 @@ public abstract class Content<V> {
 		@Override
 		public byte[] getValue() {
 			return bytes.clone();
+		}
+		
+		@Override
+		public Content<byte[]> touch() {
+			return new ByteArray(System.currentTimeMillis(), bytes);
 		}
 	}
 }

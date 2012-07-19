@@ -19,6 +19,8 @@
 package org.juzu.impl.utils;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -36,12 +38,22 @@ public class Spliterator implements Iterator<String> {
 	
 	private Integer to;
 	
-	public Spliterator(String s, char sperator) throws NullPointerException {
+	public Spliterator(String s, char seperator) throws NullPointerException {
 		if(s == null) throw new NullPointerException();
 		this.s = s;
-		this.separator = sperator;
-		this.from = 0;
+		this.separator = seperator;
+		this.from = s.length() == 0 ? -1 : 0;
 		this.to = null;
+	}
+	
+	public static List<String> split(String s, char seperator) throws NullPointerException {
+		LinkedList<String> list = new LinkedList<String>();
+		Spliterator iterator = new Spliterator(s, seperator);
+		while(iterator.hasNext()) {
+			String next = iterator.next();
+			list.add(next);
+		}
+		return list;
 	}
 
 	public boolean hasNext() {

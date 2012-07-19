@@ -17,10 +17,7 @@
  */
 package org.juzu.impl.template;
 
-import groovyjarjarantlr.Parser;
-
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -43,9 +40,6 @@ import javax.tools.StandardLocation;
 
 import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.spi.template.TemplateProvider;
-import org.juzu.impl.spi.template.gtmpl.GroovyTemplate;
-import org.juzu.impl.spi.template.gtmpl.GroovyTemplateGenerator;
-import org.juzu.impl.spi.template.gtmpl.GroovyTemplateLiteral;
 import org.juzu.template.Template;
 
 /**

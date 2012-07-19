@@ -28,18 +28,16 @@ import junit.framework.TestCase;
 public class SpliteratorTestCase extends TestCase {
 
 	public void testEmptyString() {
-		Spliterator i = new Spliterator("", ' ');
-		assertTrue(i.hasNext());
-		assertEquals("", i.next());
+		Spliterator i = new Spliterator("", '.');
 		assertFalse(i.hasNext());
 	}
 	
 	public void testSeparatorString() {
-		Spliterator i = new Spliterator(" ", ' ');
+		Spliterator i = new Spliterator(".", '.');
 		assertTrue(i.hasNext());
 		assertEquals("", i.next());
+		assertTrue(i.hasNext());
 		assertEquals("", i.next());
-		assertFalse(i.hasNext());
 	}
 	
 	public void testEntireString() {
@@ -50,7 +48,7 @@ public class SpliteratorTestCase extends TestCase {
 	}
 	
 	public void testNormal() {
-		Spliterator i = new Spliterator("a b", ' ');
+		Spliterator i = new Spliterator("a.b", '.');
 		assertTrue(i.hasNext());
 		assertEquals("a", i.next());
 		assertEquals("b", i.next());

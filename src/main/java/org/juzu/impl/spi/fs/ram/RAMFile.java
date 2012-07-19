@@ -29,22 +29,34 @@ import org.juzu.impl.utils.Content;
  */
 public class RAMFile extends RAMPath {
 
-	private String content;
+	private Content<?> content;
 	
 	public RAMFile(RAMDir parent, String name) {
 		super(parent, name);
-		this.content = "";
+		this.content = new Content.CharArray(System.currentTimeMillis(), "");
 	}
 	
 	public RAMFile update(String content) {
+		return update(new Content.CharArray(System.currentTimeMillis(), content));
+	}
+	
+	public RAMFile update(Content<?> content) {
 		if(content == null) throw new NullPointerException();
-
 		this.content = content;
-		touch();
 		return this;
 	}
 	
 	public Content<?> getContent() throws IOException {
-		return new Content.CharArray(getLastModified(), content);
+		return content;
+	}
+
+	@Override
+	public long getLastModified() {
+		return content.getLastModified();
+	}
+
+	@Override
+	public void touch() {
+		content.touch();
 	}
 }
