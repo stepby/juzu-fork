@@ -66,6 +66,24 @@ public abstract class ReadFileSystem<P> {
 		return current;
 	}
 	
+	public void traverse(P path, Visitor<P> visitor) throws IOException {
+		String name = getName(path);
+		if(isDir(path)) {
+			if(visitor.enterDir(path, name)) {
+				for(Iterator<P> i = getChildren(path); i.hasNext();) {
+					P child = i.next();
+					traverse(child, visitor);
+				}
+			}
+		} else {
+			visitor.file(path, name);
+		}
+	}
+	
+	public void traverse(Visitor<P> visitor) throws IOException {
+		traverse(getRoot(), visitor);
+	}
+	
 	public abstract boolean equals(P left, P right);
 	
 	public abstract P getRoot() throws IOException;

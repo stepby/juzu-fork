@@ -35,8 +35,10 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 
+import org.juzu.impl.compiler.VirtualJavaFileObject.FileSystem;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ReadWriteFileSystem;
+import org.juzu.impl.spi.fs.Visitor;
 import org.juzu.impl.utils.Spliterator;
 
 /**
@@ -65,8 +67,16 @@ class VirtualFileManager<I, O> extends ForwardingJavaFileManager<StandardJavaFil
 	
 	public Collection<VirtualJavaFileObject.FileSystem<I>> collectJavaFiles() throws IOException {
 		I root = input.getRoot();
-		List<VirtualJavaFileObject.FileSystem<I>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<I>>();
-		collectJavaFiles(root, javaFiles);
+		final List<VirtualJavaFileObject.FileSystem<I>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<I>>();
+		input.traverse(new Visitor.Default<I>() {
+			@Override
+			public void file(I file, String name) throws IOException {
+				if(name.endsWith(".java")) {
+					FileKey key = FileKey.newJavaName(input.packageName(file).toString(), name);
+					javaFiles.add(new VirtualJavaFileObject.FileSystem<I>(input, file, key));
+				}
+			}
+		});
 		return javaFiles;
 	}
 	
@@ -80,21 +90,6 @@ class VirtualFileManager<I, O> extends ForwardingJavaFileManager<StandardJavaFil
 			}
 		}
 		return null;
-	}
-	
-	private void collectJavaFiles(I dir, List<VirtualJavaFileObject.FileSystem<I>> javaFiles) throws IOException {
-		for(Iterator<I> i = input.getChildren(dir); i.hasNext();) {
-			I child = i.next();
-			if(input.isFile(child)) {
-				String name = input.getName(child);
-				if(name.endsWith(".java")) {
-					FileKey key = FileKey.newJavaName(input.packageName(child).toString(), name);
-					javaFiles.add(new VirtualJavaFileObject.FileSystem<I>(input, child, key));
-				}
-			} else {
-				collectJavaFiles(child, javaFiles);
-			}
-		}
 	}
 	
 	@Override
