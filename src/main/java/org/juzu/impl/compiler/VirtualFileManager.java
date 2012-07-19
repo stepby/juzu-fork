@@ -66,13 +66,14 @@ class VirtualFileManager<I, O> extends ForwardingJavaFileManager<StandardJavaFil
 	}
 	
 	public Collection<VirtualJavaFileObject.FileSystem<I>> collectJavaFiles() throws IOException {
-		I root = input.getRoot();
 		final List<VirtualJavaFileObject.FileSystem<I>> javaFiles = new ArrayList<VirtualJavaFileObject.FileSystem<I>>();
 		input.traverse(new Visitor.Default<I>() {
 			@Override
 			public void file(I file, String name) throws IOException {
 				if(name.endsWith(".java")) {
-					FileKey key = FileKey.newJavaName(input.packageName(file).toString(), name);
+					StringBuilder sb = new StringBuilder();
+					input.packageOf(file, '.', sb);
+					FileKey key = FileKey.newJavaName(sb.toString(), name);
 					javaFiles.add(new VirtualJavaFileObject.FileSystem<I>(input, file, key));
 				}
 			}
@@ -159,7 +160,9 @@ class VirtualFileManager<I, O> extends ForwardingJavaFileManager<StandardJavaFil
 			if(current != null) {
 				I child = input.getChild(current, relativeName);
 				if(child != null && input.isFile(child)) {
-					FileKey uri = FileKey.newResourceName(input.packageName(child).toString(), input.getName(child));
+					StringBuilder sb = new StringBuilder();
+					input.packageOf(child, '.', sb);
+					FileKey uri = FileKey.newResourceName(sb.toString(), input.getName(child));
 					return new VirtualJavaFileObject.FileSystem<I>(input, child, uri);
 				}
 			}

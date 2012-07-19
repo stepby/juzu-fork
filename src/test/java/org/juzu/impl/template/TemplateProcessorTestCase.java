@@ -17,21 +17,14 @@
  */
 package org.juzu.impl.template;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLClassLoader;
 
 import javax.tools.JavaFileObject;
 
 import junit.framework.TestCase;
 
-import org.juzu.impl.classloading.FileSystemClassLoader;
 import org.juzu.impl.compiler.CompilerContext;
 import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ram.RAMDir;
@@ -40,7 +33,6 @@ import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
 import org.juzu.impl.spi.template.TemplateStub;
 import org.juzu.impl.utils.Content;
-import org.juzu.template.Template;
 import org.juzu.text.WriterPrinter;
 
 /**
@@ -71,7 +63,7 @@ public class TemplateProcessorTestCase extends TestCase {
 		Content content2 = compiler.getSourceOutput(FileKey.newJavaName("foo.B", JavaFileObject.Kind.SOURCE));
 		assertNotNull(content2);
 		
-		ClassLoader cl = new FileSystemClassLoader<RAMPath>(Thread.currentThread().getContextClassLoader(), output	);
+		ClassLoader cl = new URLClassLoader(new URL[] { output.getURL() }, Thread.currentThread().getContextClassLoader());
 		
 		Class<?> aClass = cl.loadClass("foo.A");
 		Class<?> bClass = cl.loadClass("foo.B");

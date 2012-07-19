@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -93,5 +94,10 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 
 	public long getLastModified(File path) throws IOException {
 		return path.lastModified();
+	}
+
+	@Override
+	public URL getURL(File path) throws IOException {
+		return path.toURI().toURL();
 	}
 }

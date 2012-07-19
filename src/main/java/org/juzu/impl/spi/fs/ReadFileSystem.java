@@ -18,6 +18,7 @@
 package org.juzu.impl.spi.fs;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 
 import org.juzu.impl.utils.Content;
@@ -30,22 +31,29 @@ import org.juzu.impl.utils.Content;
  */
 public abstract class ReadFileSystem<P> {
 	
-	public final StringBuilder packageName(P path) throws IOException {
+	public final void pathOf(P path, char seperator, Appendable appendable) throws IOException {
+		if(packageOf(path, seperator, appendable)) {
+			appendable.append(seperator);
+		}
+		String name = getName(path);
+		appendable.append(name);
+	}
+	
+	public final boolean packageOf(P path, char seperator, Appendable appendable) throws IOException {
 		if(isDir(path)) {
 			P parent = getParent(path);
 			if(parent == null) {
-				return new StringBuilder();
+				return false;
 			} else {
-				StringBuilder sb = packageName(parent);
 				String name = getName(path);
-				if(sb.length() > 0) {
-					sb.append('.');
+				if(packageOf(parent, seperator, appendable)) {
+					appendable.append(seperator);
 				}
-				sb.append(name);
-				return sb;
+				appendable.append(name);
+				return true;
 			}
 		} else {
-			return packageName(getParent(path));
+			return packageOf(getParent(path), seperator, appendable);
 		}
 	}
 	
@@ -66,7 +74,7 @@ public abstract class ReadFileSystem<P> {
 		return current;
 	}
 	
-	public void traverse(P path, Visitor<P> visitor) throws IOException {
+	public final void traverse(P path, Visitor<P> visitor) throws IOException {
 		String name = getName(path);
 		if(isDir(path)) {
 			if(visitor.enterDir(path, name)) {
@@ -80,8 +88,13 @@ public abstract class ReadFileSystem<P> {
 		}
 	}
 	
-	public void traverse(Visitor<P> visitor) throws IOException {
+	public final void traverse(Visitor<P> visitor) throws IOException {
 		traverse(getRoot(), visitor);
+	}
+	
+	public final URL getURL() throws IOException {
+		P root = getRoot();
+		return getURL(root);
 	}
 	
 	public abstract boolean equals(P left, P right);
@@ -103,4 +116,6 @@ public abstract class ReadFileSystem<P> {
 	public abstract Content<?> getContent(P file) throws IOException;
 	
 	public abstract long getLastModified(P path) throws IOException;
+	
+	public abstract URL getURL(P path) throws IOException;
 }

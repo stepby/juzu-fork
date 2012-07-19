@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.classloading;
+package org.juzu.impl.spi.fs.ram;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,11 +29,11 @@ import org.juzu.impl.utils.Content;
  * @version $Id$
  *
  */
-public class FileSystemURLConnection extends URLConnection {
+class RAMURLConnection extends URLConnection {
 	
 	private final Content<?> content;
 
-	protected FileSystemURLConnection(URL url, Content<?> content) {
+	protected RAMURLConnection(URL url, Content<?> content) {
 		super(url);
 		this.content = content;
 	}

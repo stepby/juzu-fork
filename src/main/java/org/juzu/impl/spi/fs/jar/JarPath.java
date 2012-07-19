@@ -17,6 +17,8 @@
  */
 package org.juzu.impl.spi.fs.jar;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,6 +32,8 @@ import org.juzu.impl.utils.Spliterator;
  *
  */
 public class JarPath {
+	
+	final JarFileSystem owner;
 
 	final JarPath parent;
 	
@@ -37,27 +41,31 @@ public class JarPath {
 	
 	final String name;
 	
+	URL url;
+	
 	final boolean dir;
 	
 	private JarEntry entry;
 	
 	private LinkedHashMap<String, JarPath> children;
 	
-	public JarPath() {
+	public JarPath(JarFileSystem owner) {
 		this.entryName = "";
 		this.name = "";
 		this.dir = true;
 		this.entry = null;
 		this.children = null;
 		this.parent = null;
+		this.owner = owner;
 	}
 	
-	public JarPath(JarPath parent, String entryName, String name, boolean dir) {
+	public JarPath(JarFileSystem owner, JarPath parent, String entryName, String name, boolean dir) {
 		this.parent = parent;
 		this.entryName = entryName;
 		this.name = name;
 		this.dir = dir;
 		this.children = null;
+		this.owner = owner;
 	}
 	
 	Iterator<JarPath> getChildren() {
@@ -70,6 +78,13 @@ public class JarPath {
 	JarPath getChild(String name) {
 		if(children == null || children.isEmpty()) return null;
 		return children.get(name);
+	}
+	
+	URL getURL() throws IOException {
+		if(url == null) {
+			url = new URL("jar:/" + owner.jarURL + "!/" + entryName);
+		}
+		return url;
 	}
 	
 	void append(JarEntry entry) {
@@ -92,7 +107,7 @@ public class JarPath {
 			if(names.hasNext()) {
 				sb.append('/');
 				if(existing == null) {
-					current.children.put(name, existing = new JarPath(current, sb.toString(), name, true));
+					current.children.put(name, existing = new JarPath(owner, current, sb.toString(), name, true));
 				}
 				current = existing;
 			} else {
@@ -100,7 +115,7 @@ public class JarPath {
 					if(dir) {
 						sb.append('/');
 					}
-					current.children.put(name, existing = new JarPath(current, sb.toString(), name, dir)); 
+					current.children.put(name, existing = new JarPath(owner, current, sb.toString(), name, dir)); 
 					existing.entry = entry;
 				} else {
 					if(dir != existing.dir) {

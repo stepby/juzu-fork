@@ -17,7 +17,10 @@
  */
 package org.juzu.impl.spi.fs.jar;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.jar.JarEntry;
@@ -33,12 +36,16 @@ import org.juzu.impl.utils.Content;
  */
 public class JarFileSystem extends ReadFileSystem<JarPath> {
 	
-	private final JarFile jar;
+	final JarFile jar;
+	
+	final URL jarURL;
 	
 	private final JarPath root;
 	
-	public JarFileSystem(JarFile jar) {
-		JarPath root = new JarPath();
+	public JarFileSystem(JarFile f) throws IOException {
+		this.jar = f;
+		this.jarURL = new File(f.getName()).toURI().toURL();
+		JarPath root = new JarPath(this);
 		for(Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements();) {
 			JarEntry entry = en.nextElement();
 			root.append(entry);
@@ -46,7 +53,6 @@ public class JarFileSystem extends ReadFileSystem<JarPath> {
 		
 		//
 		this.root = root;
-		this.jar =jar;
 	}
 
 	@Override
@@ -99,5 +105,10 @@ public class JarFileSystem extends ReadFileSystem<JarPath> {
 	@Override
 	public long getLastModified(JarPath path) throws IOException {
 		return 0;
+	}
+
+	@Override
+	public URL getURL(JarPath path) throws IOException {
+		return path.getURL();
 	}
 }

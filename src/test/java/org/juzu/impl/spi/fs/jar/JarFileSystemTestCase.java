@@ -41,7 +41,9 @@ public class JarFileSystemTestCase extends TestCase {
 		fs.traverse(new Visitor.Default<JarPath>() {
 			@Override
 			public boolean enterDir(JarPath dir, String name) throws IOException {
-				System.out.println("Dir = " + fs.packageName(dir));
+				StringBuilder sb = new StringBuilder();
+				fs.packageOf(dir, '/', sb);
+				System.out.println("dir " + sb);
 				return true;
 			}
 		});

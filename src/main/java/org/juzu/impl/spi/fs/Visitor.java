@@ -37,7 +37,7 @@ public interface Visitor<P> {
 	 */
 	public static class Default<P> implements Visitor<P> {
 		public boolean enterDir(P dir, String name) throws IOException {
-			return false;
+			return true;
 		}
 
 		public void file(P file, String name) throws IOException {
