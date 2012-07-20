@@ -19,6 +19,7 @@ package org.juzu.impl.utils;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -35,6 +36,14 @@ public class Safe {
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public static Method getMethod(Class<?> type, String name, Class<?> ... parameterTypes) {
+		try {
+			return type.getDeclaredMethod(name, parameterTypes);
+		} catch(NoSuchMethodException e) {
+			return null;
 		}
 	}
 }

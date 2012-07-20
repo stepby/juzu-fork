@@ -15,49 +15,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample;
-
-import java.io.IOException;
-
-import javax.inject.Inject;
-
-import org.juzu.Action;
-import org.juzu.Render;
-import org.juzu.Resource;
-import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.RenderLiteral;
-import org.juzu.template.Template;
-import org.juzu.text.Printer;
-
+package org.juzu.application;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class Sample {
-
-	static {
-		ApplicationDescriptor desc = SampleApplication.DESCRIPTOR;
-	}
-	
-	@Inject @Resource("MyTemplate.gtmpl")
-	private Template template;
-	
-	@Inject
-	Printer printer;
-	
-	@Action
-	public RenderLiteral action() {
-		return Sample_.render;
-	}
-	
-	@Render
-	public void render() throws IOException {
-		//A generated template literal for MyTemplate
-		org.sample.templates.MyTemplate literal;
-		
-		//Render template
-		template.render(printer);
-	}
+public enum Phase {
+	ACTION, RENDER
 }

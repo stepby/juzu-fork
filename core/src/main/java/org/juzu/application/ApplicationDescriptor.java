@@ -15,49 +15,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample;
+package org.juzu.application;
 
-import java.io.IOException;
-
-import javax.inject.Inject;
-
-import org.juzu.Action;
-import org.juzu.Render;
-import org.juzu.Resource;
-import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.RenderLiteral;
-import org.juzu.template.Template;
-import org.juzu.text.Printer;
-
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class Sample {
+public class ApplicationDescriptor {
 
-	static {
-		ApplicationDescriptor desc = SampleApplication.DESCRIPTOR;
-	}
+	private final String packageName;
 	
-	@Inject @Resource("MyTemplate.gtmpl")
-	private Template template;
+	private final String name;
 	
-	@Inject
-	Printer printer;
+	private final List<ControllerMethod> controllerMethods;
 	
-	@Action
-	public RenderLiteral action() {
-		return Sample_.render;
-	}
+	private final String templatesPackageName;
 	
-	@Render
-	public void render() throws IOException {
-		//A generated template literal for MyTemplate
-		org.sample.templates.MyTemplate literal;
+	public ApplicationDescriptor(
+		String packageName, 
+		String name, 
+		String templatesPackageName, 
+		List<ControllerMethod> controllerMethods) {
 		
-		//Render template
-		template.render(printer);
+		this.packageName = packageName;
+		this.name = name;
+		this.templatesPackageName = templatesPackageName;
+		this.controllerMethods = Collections.unmodifiableList(controllerMethods);
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public List<ControllerMethod> getControllerMethods() {
+		return controllerMethods;
+	}
+
+	public String getTemplatesPackageName() {
+		return templatesPackageName;
 	}
 }

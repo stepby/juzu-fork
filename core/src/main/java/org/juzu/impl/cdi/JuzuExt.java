@@ -15,49 +15,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample;
+package org.juzu.impl.cdi;
 
-import java.io.IOException;
-
-import javax.inject.Inject;
-
-import org.juzu.Action;
-import org.juzu.Render;
-import org.juzu.Resource;
-import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.RenderLiteral;
-import org.juzu.template.Template;
-import org.juzu.text.Printer;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
+ * Juzu CDI extension
  */
-public class Sample {
+public class JuzuExt implements Extension {
 
-	static {
-		ApplicationDescriptor desc = SampleApplication.DESCRIPTOR;
-	}
-	
-	@Inject @Resource("MyTemplate.gtmpl")
-	private Template template;
-	
-	@Inject
-	Printer printer;
-	
-	@Action
-	public RenderLiteral action() {
-		return Sample_.render;
-	}
-	
-	@Render
-	public void render() throws IOException {
-		//A generated template literal for MyTemplate
-		org.sample.templates.MyTemplate literal;
+	public JuzuExt() {
 		
-		//Render template
-		template.render(printer);
+	}
+	
+	<T> void processAnnotatedType(@Observes ProcessAnnotatedType<T> pat) {
+		AnnotatedType<T> annotatedType = pat.getAnnotatedType();
+		Class<?> type = annotatedType.getJavaClass();
+		if(type.getName().startsWith("org.juzu.")) {
+			boolean present = annotatedType.isAnnotationPresent(Export.class);
+			if(!present) pat.veto();
+		}
+	}
+	
+	void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
+		event.addContext(InvocationContext.getInstance());
 	}
 }

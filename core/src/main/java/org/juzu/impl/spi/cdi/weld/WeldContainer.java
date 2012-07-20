@@ -78,7 +78,7 @@ public class WeldContainer extends Container {
 			}
 
 			public Iterable<Metadata<Extension>> getExtensions() {
-				return Collections.emptyList();
+				return bootstrap.loadExtensions(Thread.currentThread().getContextClassLoader());
 			}
 
 			public ServiceRegistry getServices() {
@@ -86,7 +86,7 @@ public class WeldContainer extends Container {
 			}
 
 			public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> arg0) {
-				throw new UnsupportedOperationException();
+				return bda;
 			}
 		};
 		
