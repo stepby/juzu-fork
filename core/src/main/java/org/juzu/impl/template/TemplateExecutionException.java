@@ -25,7 +25,7 @@ import org.juzu.template.Location;
  *
  * Mar 28, 2012
  */
-public class TemplateExecutionException extends Exception {
+public class TemplateExecutionException extends RuntimeException {
 
 	private final String templateId;
 	
