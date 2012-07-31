@@ -17,15 +17,21 @@
  */
 package org.juzu.impl.compiler;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.processing.Processor;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
@@ -33,7 +39,6 @@ import javax.tools.ToolProvider;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ReadWriteFileSystem;
 import org.juzu.impl.utils.Content;
-import org.juzu.impl.utils.Content.ByteArray;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -43,6 +48,8 @@ import org.juzu.impl.utils.Content.ByteArray;
  */
 public class CompilerContext<I, O> {
 
+	final List<URL> classPath;
+	
 	final ReadFileSystem<I> input;
 	
 	private JavaCompiler compiler;
@@ -52,6 +59,11 @@ public class CompilerContext<I, O> {
 	private Set<Processor> processors;
 	
 	public CompilerContext(ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
+		this(Collections.<URL>emptyList(), input, output);
+	}
+	
+	public CompilerContext(List<URL> classPath, ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
+		this.classPath = classPath;
 		this.input = input;
 		this.compiler = ToolProvider.getSystemJavaCompiler();
 		this.fileManager = new VirtualFileManager<I, O>(input, compiler.getStandardFileManager(null, null, null), output);
@@ -102,8 +114,31 @@ public class CompilerContext<I, O> {
 			*/
 		}
 		
-		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, null, null, sources);
+		//Build classPath
+		List<String> options = new ArrayList<String>();
+		if(classPath.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			for(URL url : classPath) {
+				sb.append(url.getFile()).append(File.pathSeparator);
+			}
+			options.add("-classpath");
+			options.add(sb.toString());
+		}
+		
+		final AtomicBoolean failed = new AtomicBoolean(false);
+		DiagnosticListener<JavaFileObject> listener = new DiagnosticListener<JavaFileObject>() {
+			public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+				if(diagnostic.getKind() == Diagnostic.Kind.ERROR) failed.set(true);
+			}
+		};
+		
+		//
+		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, listener, options, null, sources);
 		task.setProcessors(processors);
-		return task.call(); 
+		
+		//We don't use the return value because sometime it says it is failed although
+		//It is not, need to investigate this at some point
+		task.call();
+		return !failed.get();
 	}
 }

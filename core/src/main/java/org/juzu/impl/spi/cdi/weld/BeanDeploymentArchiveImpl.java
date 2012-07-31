@@ -44,6 +44,8 @@ import org.juzu.impl.spi.fs.Visitor;
  */
 public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 	
+	private final WeldContainer owner;
+	
 	private final String id;
 	
 	private final Collection<String> beanClasses;
@@ -52,9 +54,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 	
 	private final ServiceRegistry registry;
 	
-	private final ClassLoader classLoader;
-	
-	BeanDeploymentArchiveImpl(Bootstrap bootstrap, String id, List<ReadFileSystem<?>> fileSystems) throws IOException {
+	BeanDeploymentArchiveImpl(
+		WeldContainer owner, 
+		String id, 
+		List<ReadFileSystem<?>> fileSystems) throws IOException {
+		
 		List<URL> xmlURLs = new ArrayList<URL>();
 		List<URL> fsURLs = new ArrayList<URL>();
 		final List<String> beanClasses = new ArrayList<String>();
@@ -73,7 +77,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 			});
 			
 			//
-			fsURLs.add(fileSystem.getURL());
+			//fsURLs.add(fileSystem.getURL());
 			
 			//
 			Object beansPath = fileSystem.getPath(Arrays.asList("META-INF", "beans.xml"));
@@ -83,11 +87,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 		}
 		
 		//
-		BeansXml xml = bootstrap.parse(xmlURLs);
+		BeansXml xml = owner.bootstrap.parse(xmlURLs);
 		
 		//
-		URLClassLoader classLoader = new URLClassLoader(fsURLs.toArray(new URL[fsURLs.size()]), Thread.currentThread().getContextClassLoader());
-		ResourceLoader loader = new ClassLoaderResourceLoader(classLoader);
+		//URLClassLoader classLoader = new URLClassLoader(fsURLs.toArray(new URL[fsURLs.size()]), Thread.currentThread().getContextClassLoader());
+		ResourceLoader loader = new ClassLoaderResourceLoader(owner.classLoader);
 		
 		//
 		ServiceRegistry registry = new SimpleServiceRegistry();
@@ -98,7 +102,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 		this.xml =xml;
 		this.id = id;
 		this.registry = registry;
-		this.classLoader = classLoader;
+		this.owner = owner;
 	}
 	
 
@@ -145,6 +149,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 	}
 
 	public ClassLoader getClassLoader() {
-		return classLoader;
+		return owner.classLoader;
 	}
 }

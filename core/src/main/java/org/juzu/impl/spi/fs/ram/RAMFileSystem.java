@@ -89,12 +89,12 @@ public class RAMFileSystem extends ReadWriteFileSystem<RAMPath> {
 	}
 
 	@Override
-	public RAMPath addDir(RAMPath parent, String name) throws IOException {
+	public RAMDir addDir(RAMPath parent, String name) throws IOException {
 		return ((RAMDir) parent).addDir(name);
 	}
 
 	@Override
-	public RAMPath addFile(RAMPath parent, String name) throws IOException {
+	public RAMFile addFile(RAMPath parent, String name) throws IOException {
 		return ((RAMDir) parent).addFile(name);
 	}
 

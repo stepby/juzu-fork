@@ -183,4 +183,11 @@ public class CompilationTestCase extends TestCase {
 		assertEquals(2, compiler.getClassOutputKeys().size());
 		assertEquals(1, compiler.getSourceOuputKeys().size());
 	}
+	
+	public void testCompilationFailure() throws Exception {
+		RAMFileSystem fs = new RAMFileSystem();
+		fs.getRoot().addFile("A.java").update("public class A {");
+		CompilerContext<RAMPath, ?> compiler = new CompilerContext<RAMPath, RAMPath>(fs, new RAMFileSystem());
+		assertFalse(compiler.compile());
+	}
 }

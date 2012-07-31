@@ -17,6 +17,8 @@
  */
 package org.juzu.impl.application;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -65,10 +67,13 @@ public class FooTestCase extends TestCase {
 		assertTrue(compiler.compile());
 		now = System.currentTimeMillis() - now;
 		System.out.println("Compiled files in " + now + " ms");
+
+		//
+		ClassLoader cl = new URLClassLoader(new URL[] { output.getURL() }, Thread.currentThread().getContextClassLoader());
 		
 		//
 		now = System.currentTimeMillis();
-		Container container = new WeldContainer();
+		Container container = new WeldContainer(cl);
 		container.addFileSystem(output);
 		container.start();
 		now = System.currentTimeMillis() - now;

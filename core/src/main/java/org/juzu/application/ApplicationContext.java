@@ -92,6 +92,7 @@ public class ApplicationContext {
 		if(method == null) throw new UnsupportedOperationException("handle me gracefully");
 		else {
 			Class<?> type = method.getType();
+			System.out.println("type = " + type);
 			BeanManager mgr = container.getManager();
 			Set<? extends Bean> beans = mgr.getBeans(type);
 			if(beans.size() == 1) {
