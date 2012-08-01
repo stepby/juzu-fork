@@ -19,6 +19,8 @@ package org.juzu.request;
 
 import java.util.Map;
 
+import org.juzu.application.Phase;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -35,4 +37,6 @@ public abstract class RequestContext {
 	public final Map<String, String[]> getParameters() {
 		return parameters;
 	}
+	
+	public abstract Phase getPhase();
 }

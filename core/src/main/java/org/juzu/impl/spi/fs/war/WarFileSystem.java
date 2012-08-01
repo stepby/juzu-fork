@@ -164,7 +164,7 @@ public abstract class WarFileSystem extends ReadFileSystem<String> {
 		if(resourcePaths != null) {
 			List<String> tmp = new ArrayList<String>(resourcePaths.size());
 			for(String resourcePath : resourcePaths) {
-				tmp.add(resourcePath);
+				tmp.add(resourcePath.substring(mountPoint.length()));
 			}
 			return tmp;
 		} else return Collections.emptyList();
@@ -172,7 +172,7 @@ public abstract class WarFileSystem extends ReadFileSystem<String> {
 	
 	@Override
 	public File getFile(String path) throws IOException {
-		String realPath = doGetRealPath(path);
+		String realPath = doGetRealPath(mountPoint + path);
 		return realPath == null ? null : new File(realPath);
 	}
 	

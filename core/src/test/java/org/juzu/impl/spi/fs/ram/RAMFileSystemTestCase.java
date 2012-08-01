@@ -18,6 +18,7 @@
 package org.juzu.impl.spi.fs.ram;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.juzu.test.AbstractTestCase;
 
@@ -27,6 +28,12 @@ import org.juzu.test.AbstractTestCase;
  *
  */
 public class RAMFileSystemTestCase extends AbstractTestCase {
+	
+	public void testFoo() throws IOException {
+		RAMFileSystem fs = new RAMFileSystem();
+		fs.addDir(fs.getRoot(), "WEB-INF").addDir("classes").addDir("org").addDir("juzu").addFile("config.properties");
+		System.out.println(fs.getFile(Arrays.asList("org", "juzu"), "config.properties"));
+	}
 
 	public void testLastModified() throws IOException {
 		RAMFileSystem fs = new RAMFileSystem();

@@ -18,6 +18,8 @@
 package org.sample;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -58,6 +60,9 @@ public class Sample {
 		org.sample.templates.MyTemplate literal;
 		
 		//Render template
-		template.render(printer);
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.put("action", "" + Sample_.actionURL());
+		data.put("render", "" + Sample_.renderURL());
+		template.render(printer, data);
 	}
 }

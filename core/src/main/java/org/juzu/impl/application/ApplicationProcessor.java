@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +43,18 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 
+import org.juzu.Action;
 import org.juzu.Application;
 import org.juzu.Render;
+import org.juzu.URLBuilder;
+import org.juzu.application.ApplicationContext;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.ControllerMethod;
 import org.juzu.application.Phase;
 import org.juzu.application.RenderLiteral;
 import org.juzu.impl.utils.PackageMap;
 import org.juzu.impl.utils.Safe;
+import org.juzu.request.RenderContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -60,7 +65,7 @@ import org.juzu.impl.utils.Safe;
 @javax.annotation.processing.SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class ApplicationProcessor extends AbstractProcessor {
 	
-	static class Foo {
+	static class ApplicationMetaData {
 		private final PackageElement packageElt;
 		
 		private final String fqn;
@@ -71,9 +76,9 @@ public class ApplicationProcessor extends AbstractProcessor {
 		
 		private final String packageName;
 		
-		private final List<Bar> renders;
+		private final List<ControllerMetaData> controllers;
 		
-		Foo(PackageElement packageElt, String applicationName) {
+		ApplicationMetaData(PackageElement packageElt, String applicationName) {
 			String packageName = packageElt.getQualifiedName().toString();
 			
 			this.packageElt = packageElt;
@@ -81,18 +86,38 @@ public class ApplicationProcessor extends AbstractProcessor {
 			this.name = applicationName;
 			this.packageName = packageName;
 			this.prefix = packageName + ".";
-			this.renders = new ArrayList<Bar>();
+			this.controllers = new ArrayList<ControllerMetaData>();
 		}
 	}
 	
-	static class Bar {
+	static class ControllerMetaData {
+
+		private final List<MethodMetaData> methods;
+		
 		private final TypeElement typeElt;
 		
-		private final List<ExecutableElement> methods;
-		
-		Bar(TypeElement typeElt) {
+		ControllerMetaData(TypeElement typeElt) {
 			this.typeElt = typeElt;
-			this.methods = new ArrayList<ExecutableElement>();
+			this.methods = new ArrayList<MethodMetaData>();
+		}
+	}
+	
+	static class MethodMetaData {
+		
+		private final Phase phase;
+		
+		private final ExecutableElement element;
+		
+		private final ExecutableType type;
+		
+		public MethodMetaData(Phase phase, ExecutableElement element) {
+			this.phase = phase;
+			this.element = element;
+			this.type = (ExecutableType)element.asType();
+		}
+		
+		public CharSequence getName() {
+			return element.getSimpleName();
 		}
 	}
 	
@@ -100,14 +125,11 @@ public class ApplicationProcessor extends AbstractProcessor {
 
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		Set<? extends Element> applicationAnns = roundEnv.getElementsAnnotatedWith(Application.class);
 		Filer filer = processingEnv.getFiler();
 		
-		//
-		PackageMap<Foo> applications = new PackageMap<Foo>();
-		
 		//Discover all applications
-		for(Element elt : applicationAnns) {
+		PackageMap<ApplicationMetaData> applications = new PackageMap<ApplicationMetaData>();
+		for(Element elt : roundEnv.getElementsAnnotatedWith(Application.class)) {
 			PackageElement packageElt = (PackageElement) elt;
 			String packageName = packageElt.getQualifiedName().toString();
 			
@@ -126,39 +148,52 @@ public class ApplicationProcessor extends AbstractProcessor {
 				} else {
 					name = Character.toUpperCase(name.charAt(0)) + name.substring(1) + "Application";
 				}
-				applications.putValue(packageName, new Foo(packageElt, name));
+				applications.putValue(packageName, new ApplicationMetaData(packageElt, name));
 			}
 		}
 		
 		//Collect @Render
-		Map<String, Bar> renderMap = new HashMap<String, Bar>() ;
-		for(Element elt : roundEnv.getElementsAnnotatedWith(Render.class)) {
-			ExecutableElement executableElt = (ExecutableElement) elt;
-			
-			//Find the matching type and the enclosing application
-			TypeElement typeElt = (TypeElement)executableElt.getEnclosingElement();
-			
-			//
-			String typeName = typeElt.getQualifiedName().toString();
-			Bar a = renderMap.get(typeName);
-			if(a == null) {
-				renderMap.put(typeName, a = new Bar(typeElt));
-				
-				//Find the matching application
-				PackageElement pkg = processingEnv.getElementUtils().getPackageOf(typeElt);
-				String fqn = pkg.getQualifiedName().toString();
+		Map<String, ControllerMetaData> controllerMap = new HashMap<String, ControllerMetaData>() ;
+		Set<? extends Element> actions = roundEnv.getElementsAnnotatedWith(Action.class);
+		Set<? extends Element> renders = roundEnv.getElementsAnnotatedWith(Render.class);
+		Set<? extends Element> intersection = new HashSet<Element>(actions);
+		intersection.retainAll(renders);
+		if(intersection.size() > 0) {
+			throw new UnsupportedOperationException("handle me gracefully " + renders);
+		}
+		
+		for(Set<? extends Element> elts : Arrays.asList(actions, renders)) {
+			for(Element elt : elts) {
+				ExecutableElement executableElt = (ExecutableElement) elt;
+
+				//Find the matching type and the enclosing application
+				TypeElement typeElt = (TypeElement)executableElt.getEnclosingElement();
+
+				//
+				String typeName = typeElt.getQualifiedName().toString();
+				ControllerMetaData a = controllerMap.get(typeName);
+				if(a == null) {
+					controllerMap.put(typeName, a = new ControllerMetaData(typeElt));
+
+					//Find the matching application
+					PackageElement pkg = processingEnv.getElementUtils().getPackageOf(typeElt);
+					String fqn = pkg.getQualifiedName().toString();
+
+					//
+					ApplicationMetaData found = applications.resolveValue(fqn);
+					if(found == null) throw new UnsupportedOperationException("handle me gracefully: could not find application for package " + fqn);
+					else found.controllers.add(a);
+				}
 				
 				//
-				Foo found = applications.resolveValue(fqn);
-				if(found == null) throw new UnsupportedOperationException("handle me gracefully");
-				else found.renders.add(a);
+				Phase phase = elts == actions ? Phase.ACTION : Phase.RENDER;
+				a.methods.add(new MethodMetaData(phase, executableElt));
 			}
-			a.methods.add(executableElt);
 		}
 		
 		//
 		for(int i = 0; i < applications.getSize(); i++) 	{
-			Foo foo = applications.getValue(i);
+			ApplicationMetaData foo = applications.getValue(i);
 			try {
 				JavaFileObject jfo = filer.createSourceFile(foo.fqn, foo.packageElt);
 				Writer writer = jfo.openWriter();
@@ -181,10 +216,10 @@ public class ApplicationProcessor extends AbstractProcessor {
 					writer.append("\"").append(foo.name).append("\",");
 					writer.append("\"").append(templatesPackageName).append("\",");
 					writer.append("Arrays.<").append(ControllerMethod.class.getSimpleName()).append(">asList(");
-					for(Bar bar : foo.renders) {
-						for(Iterator<ExecutableElement> j = bar.methods.iterator(); j.hasNext();) {
-							ExecutableElement exe = j.next();
-							writer.append(bar.typeElt.getQualifiedName()).append("_").append(".").append(exe.getSimpleName()).append(".getDescriptor()");
+					for(ControllerMetaData bar : foo.controllers) {
+						for(Iterator<MethodMetaData> j = bar.methods.iterator(); j.hasNext();) {
+							MethodMetaData exe = j.next();
+							writer.append(bar.typeElt.getQualifiedName()).append("_").append(".").append(exe.getName()).append(".getDescriptor()");
 							if(j.hasNext()) 
 								writer.append(", ");
 						}
@@ -208,7 +243,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 				FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, "org.juzu", "config.properties");
 				Writer writer = fo.openWriter();
 				try {
-					writer.append(manifest.toString());
+					writer.append(manifest);
 				} finally {
 					Safe.close(writer);
 				}
@@ -218,7 +253,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 		}
 		
 		//Generate the action literals
-		for(Map.Entry<String, Bar> entry : renderMap.entrySet()) {
+		for(Map.Entry<String, ControllerMetaData> entry : controllerMap.entrySet()) {
 			try {
 				String type = entry.getKey();
 				JavaFileObject jfo = filer.createSourceFile(type + "_");
@@ -230,37 +265,57 @@ public class ApplicationProcessor extends AbstractProcessor {
 					writer.append("import ").append(ControllerMethod.class.getName()).append(";\n");
 					writer.append("import ").append(Safe.class.getName()).append(";\n");
 					writer.append("import ").append(Phase.class.getName()).append(";\n");
+					writer.append("import ").append(URLBuilder.class.getName()).append(";\n");
+					writer.append("import ").append(ApplicationContext.class.getName()).append(";\n");
+					writer.append("import ").append(RenderContext.class.getName()).append(";\n");
 					writer.append("public class ").append(entry.getValue().typeElt.getSimpleName()).append("_ {\n");
 					
 					//
-					for(ExecutableElement executableElt : entry.getValue().methods) {
-						ExecutableType executableType = (ExecutableType)executableElt.asType();
-						
-						//
-						writer.append("public static final ").append(RenderLiteral.class.getSimpleName()).append(" ").append(executableElt.getSimpleName()).append(" = ");
-						writer.append("new ").append(RenderLiteral.class.getSimpleName()).append("(new ").append(ControllerMethod.class.getSimpleName()).append("(");
-						
-						//Phase
+					int index = 0;
+					for(MethodMetaData method : entry.getValue().methods) {
+						//Method
+						writer.append("private static final ").append(ControllerMethod.class.getSimpleName()).append(" method_")
+						.append(String.valueOf(index)).append(" = ");
+						writer.append("new ").append(ControllerMethod.class.getSimpleName()).append("(");
 						writer.append(Phase.class.getSimpleName()).append(".").append(Phase.RENDER.name());
 						writer.append(",");
-						
-						//Type
-						writer.append(type).append(".class").append(",");
-						
-						//Method
-						writer.append("Safe.getMethod(").append(type).append(".class, \"").append(executableElt.getSimpleName()).append("\"");
-						for(TypeMirror foo : executableType.getParameterTypes()) {
+						writer.append(type).append(".class");
+						writer.append(',');
+						writer.append("Safe.getMethod(").append(type).append(".class,\"").append(method.getName()).append("\"");
+						for(TypeMirror foo : method.type.getParameterTypes()) {
 							TypeMirror earsed = processingEnv.getTypeUtils().erasure(foo);
 							 writer.append(",").append(earsed.toString()).append(".class");
 						}
 						writer.append(")");
 						
-						//Variable names
-						for(VariableElement ve : executableElt.getParameters()) {
+						for(VariableElement ve : method.element.getParameters()) {
 							writer.append(",\"").append(ve.getSimpleName()).append("\"");
 						}
-						writer.append("));\n");
+						writer.append(");\n");
+						
+						//URL builder
+						writer.append("public static ").append(URLBuilder.class.getSimpleName()).append(" ").append(method.getName()).append("URL(");
+						List<? extends VariableElement> argDecls = method.element.getParameters();
+						List<? extends TypeMirror> argTypes = method.type.getParameterTypes();
+						for(int i = 0; i < argDecls.size(); i++) {
+							if(i > 0) writer.append(',');
+							TypeMirror argumentType = argTypes.get(i);
+							VariableElement argumentElement = argDecls.get(i);
+							writer.append(argumentType.toString()).append(" ").append(argumentElement.getSimpleName().toString());
+						}
+						
+						writer.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(method_");
+						writer.append(Integer.toOctalString(index));
+						writer.append("); }\n");
+						
+						//Maybe remove that
+						writer.append("public static final RenderLiteral ").append(method.getName()).append(" = ");
+						writer.append("new RenderLiteral(method_").append(Integer.toBinaryString(index)).append(");\n");
+						
+						index++;
 					}
+					
+					//
 					writer.append("}\n");
 				} finally {
 					Safe.close(writer);

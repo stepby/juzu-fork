@@ -19,6 +19,8 @@ package org.juzu.request;
 
 import java.util.Map;
 
+import org.juzu.application.Phase;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -28,5 +30,10 @@ public class ActionContext extends RequestContext {
 
 	public ActionContext(Map<String, String[]> parameters) {
 		super(parameters);
+	}
+
+	@Override
+	public Phase getPhase() {
+		return Phase.ACTION;
 	}
 }

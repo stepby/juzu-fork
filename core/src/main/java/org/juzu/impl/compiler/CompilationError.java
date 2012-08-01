@@ -58,4 +58,9 @@ public class CompilationError {
 	public String getMessage() {
 		return message;
 	}
+	
+	@Override
+	public String toString() {
+		return "CompilationError[source=" + source + ", message=" + message + ", location=" + location + "]"; 
+	}
 }

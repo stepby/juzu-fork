@@ -33,6 +33,7 @@ import org.juzu.impl.cdi.Export;
 import org.juzu.impl.cdi.InvocationContext;
 import org.juzu.impl.cdi.InvocationScoped;
 import org.juzu.impl.spi.cdi.Container;
+import org.juzu.request.ActionContext;
 import org.juzu.request.RenderContext;
 import org.juzu.request.RequestContext;
 import org.juzu.template.Template;
@@ -51,7 +52,11 @@ public class ApplicationContext {
 	
 	private final Container container;
 	
-	private final ThreadLocal<RequestContext> current = new ThreadLocal<RequestContext>();
+	private static final ThreadLocal<RequestContext> current = new ThreadLocal<RequestContext>();
+	
+	public static RequestContext getCurrentRequest() {
+		return current.get();
+	}
 	
 	public ApplicationContext() {
 		Bootstrap bootstrap = Bootstrap.foo.get();
@@ -69,9 +74,11 @@ public class ApplicationContext {
 	 * @param data the data
 	 * @return the render descriptor or null if nothing could be resolved
 	 */
-	public ControllerMethod resolve(Map<String, String[]> data) {
-		List<ControllerMethod> renders = descriptor.getControllerMethods();
-		return renders.isEmpty() ? null : renders.get(0);
+	public ControllerMethod resolve(Phase phase, Map<String, String[]> data) {
+		for(ControllerMethod method : descriptor.getControllerMethods()) {
+			if(method.getPhase() == phase) return method;
+		}
+		return null;
 	}
 	
 	public void invoke(RequestContext context) {
@@ -79,7 +86,9 @@ public class ApplicationContext {
 			current.set(context);
 			InvocationContext.start();
 			if(context instanceof RenderContext) {
-				invoke((RenderContext) context);
+				doInvoke((RenderContext) context);
+			} else if(context instanceof ActionContext) {
+				doInvoke(context);
 			} else throw new UnsupportedOperationException();
 		} finally {
 			current.set(null);
@@ -87,8 +96,8 @@ public class ApplicationContext {
 		}
 	}
 	
-	private void invoke(RenderContext renderContext) {
-		ControllerMethod method = resolve(renderContext.getParameters());
+	private void doInvoke(RequestContext context) {
+		ControllerMethod method = resolve(context.getPhase(), context.getParameters());
 		if(method == null) throw new UnsupportedOperationException("handle me gracefully");
 		else {
 			Class<?> type = method.getType();
