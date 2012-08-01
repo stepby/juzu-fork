@@ -39,6 +39,7 @@ import javax.tools.ToolProvider;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ReadWriteFileSystem;
 import org.juzu.impl.utils.Content;
+import org.juzu.utils.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -46,7 +47,7 @@ import org.juzu.impl.utils.Content;
  *
  * Mar 16, 2012
  */
-public class CompilerContext<I, O> {
+public class Compiler<I, O> {
 
 	final List<URL> classPath;
 	
@@ -58,11 +59,11 @@ public class CompilerContext<I, O> {
 	
 	private Set<Processor> processors;
 	
-	public CompilerContext(ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
+	public Compiler(ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
 		this(Collections.<URL>emptyList(), input, output);
 	}
 	
-	public CompilerContext(List<URL> classPath, ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
+	public Compiler(List<URL> classPath, ReadFileSystem<I> input, ReadWriteFileSystem<O> output) {
 		this.classPath = classPath;
 		this.input = input;
 		this.compiler = ToolProvider.getSystemJavaCompiler();
@@ -93,7 +94,7 @@ public class CompilerContext<I, O> {
 		return file != null ? file.content : null;
 	}
 	
-	public boolean compile() throws IOException {
+	public List<CompilationError> compile() throws IOException {
 		Collection<VirtualJavaFileObject.FileSystem<I>> sources = fileManager.collectJavaFiles();
 		fileManager.sourceOutput.clear();
 		fileManager.classOutput.clear();
@@ -125,10 +126,29 @@ public class CompilerContext<I, O> {
 			options.add(sb.toString());
 		}
 		
-		final AtomicBoolean failed = new AtomicBoolean(false);
+		final List<CompilationError> errors = new ArrayList<CompilationError>();
 		DiagnosticListener<JavaFileObject> listener = new DiagnosticListener<JavaFileObject>() {
 			public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-				if(diagnostic.getKind() == Diagnostic.Kind.ERROR) failed.set(true);
+				if(diagnostic.getKind() == Diagnostic.Kind.ERROR) {
+					Location location = new Location((int)diagnostic.getColumnNumber(), (int)diagnostic.getLineNumber());
+					String message = diagnostic.getMessage(null);
+					JavaFileObject obj = diagnostic.getSource();
+					
+					//
+					File resolvedFile = null;
+					if(obj instanceof VirtualJavaFileObject.FileSystem) {
+						VirtualJavaFileObject.FileSystem foo = (VirtualJavaFileObject.FileSystem) obj;
+						try {
+							resolvedFile = foo.getFile();
+						} catch(Exception e){}
+					}
+					
+					//
+					CompilationError error = new CompilationError(obj.getName().toString(), resolvedFile, location, message);
+					
+					//
+					errors.add(error);
+				}
 			}
 		};
 		
@@ -139,6 +159,6 @@ public class CompilerContext<I, O> {
 		//We don't use the return value because sometime it says it is failed although
 		//It is not, need to investigate this at some point
 		task.call();
-		return !failed.get();
+		return errors;
 	}
 }

@@ -19,7 +19,6 @@ package org.juzu.impl.spi.fs.jar;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -110,5 +109,10 @@ public class JarFileSystem extends ReadFileSystem<JarPath> {
 	@Override
 	public URL getURL(JarPath path) throws IOException {
 		return path.getURL();
+	}
+
+	@Override
+	public File getFile(JarPath path) throws IOException {
+		return null;
 	}
 }

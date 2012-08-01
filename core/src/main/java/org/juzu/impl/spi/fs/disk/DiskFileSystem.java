@@ -43,41 +43,50 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 		this.root = root;
 	}
 
+	@Override
 	public boolean equals(File left, File right) {
 		return left.equals(right);
 	}
 
+	@Override
 	public File getRoot() throws IOException {
 		return root;
 	}
 
+	@Override
 	public File getParent(File path) throws IOException {
 		if(path.equals(root)) return null;
 		else return path.getParentFile();
 	}
 
+	@Override
 	public String getName(File path) throws IOException {
 		if(path.equals(root)) return "";
 		else return path.getName();
 	}
 
+	@Override
 	public Iterator<File> getChildren(File dir) throws IOException {
 		return Arrays.asList(dir.listFiles()).iterator();
 	}
 
+	@Override
 	public boolean isDir(File path) throws IOException {
 		return path.isDirectory();
 	}
 
+	@Override
 	public boolean isFile(File path) throws IOException {
 		return path.isFile();
 	}
 
+	@Override
 	public File getChild(File dir, String name) throws IOException {
 		File child = new File(dir, name);
 		return child.exists() ? child : null;
 	}
 
+	@Override
 	public Content<?> getContent(File file) throws IOException {
 		FileInputStream	in = new FileInputStream(file);
 		try {
@@ -92,6 +101,7 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 		}
 	}
 
+	@Override
 	public long getLastModified(File path) throws IOException {
 		return path.lastModified();
 	}
@@ -99,5 +109,10 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 	@Override
 	public URL getURL(File path) throws IOException {
 		return path.toURI().toURL();
+	}
+
+	@Override
+	public File getFile(File path) throws IOException {
+		return path;
 	}
 }

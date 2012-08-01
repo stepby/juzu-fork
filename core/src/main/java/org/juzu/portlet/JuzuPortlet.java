@@ -25,6 +25,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -34,6 +36,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.inject.Inject;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.MimeResponse;
 import javax.portlet.Portlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
@@ -44,7 +47,8 @@ import org.juzu.application.ApplicationContext;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.Bootstrap;
 import org.juzu.impl.application.ApplicationProcessor;
-import org.juzu.impl.compiler.CompilerContext;
+import org.juzu.impl.compiler.CompilationError;
+import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.impl.spi.cdi.weld.WeldContainer;
 import org.juzu.impl.spi.fs.Change;
@@ -59,6 +63,7 @@ import org.juzu.impl.utils.DevClassLoader;
 import org.juzu.request.RenderContext;
 import org.juzu.text.Printer;
 import org.juzu.text.WriterPrinter;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -84,9 +89,13 @@ public class JuzuPortlet implements Portlet {
 			this.prod = !("dev".equals(runMode));
 			
 			//
+			Collection<CompilationError> errors = boot();
+			if(errors.size() > 0) {
+				System.out.println("Error when compiling application " + errors);
+			}
 	}
 	
-	private void boot() throws PortletException {
+	private Collection<CompilationError> boot() throws PortletException {
 		long l = -System.currentTimeMillis();
 		if(prod) {
 			if(applicationContext == null) {
@@ -119,17 +128,18 @@ public class JuzuPortlet implements Portlet {
 					WarFileSystem fs = WarFileSystem.create(config.getPortletContext(), "/WEB-INF/src/");
 					RAMFileSystem classes = new RAMFileSystem();
 					
-					CompilerContext<String, RAMPath> compiler = new CompilerContext<String, RAMPath>(classPath, fs, classes);
+					Compiler<String, RAMPath> compiler = new Compiler<String, RAMPath>(classPath, fs, classes);
 					compiler.addAnnotationProcessor(new TemplateProcessor());
 					compiler.addAnnotationProcessor(new ApplicationProcessor());
-					if(compiler.compile()) {
+					List<CompilationError> res = compiler.compile();
+					if(res.isEmpty()) {
 						ClassLoader cl1 = new DevClassLoader(Thread.currentThread().getContextClassLoader());
 						ClassLoader cl2 = new URLClassLoader(new URL[] {classes.getURL()}, cl1);
 						boot(classes, cl2);
 						devScanner = new FileSystemScanner<String>(fs);
 						devScanner.scan();
 					} else {
-						throw new PortletException("Could not compile application");
+						return res;
 					}
 				}
 				
@@ -140,6 +150,7 @@ public class JuzuPortlet implements Portlet {
 		
 		l += System.currentTimeMillis();
 		System.out.println("Booted in " + l + " ms");
+		return Collections.emptyList();
 	}
 	
 	private <P, D> void boot(ReadFileSystem<P> classes, ClassLoader classLoader) throws Exception {
@@ -174,13 +185,35 @@ public class JuzuPortlet implements Portlet {
 	}
 
 	public void render(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-		boot();
-		
+		Collection<CompilationError> errors =  boot();
+
 		//
-		Printer printer = new WriterPrinter(response.getWriter());
-		
-		RenderContext renderContext = new RenderContext(request.getParameterMap(), printer);
-		applicationContext.invoke(renderContext);
+		if(errors.isEmpty()) {
+			Printer printer = new WriterPrinter(response.getWriter());
+			
+			RenderContext renderContext = new RenderContext(request.getParameterMap(), printer);
+			applicationContext.invoke(renderContext);
+		} else {
+//			Element elt	 = response.createElement("link");
+//			elt.setAttribute("rel", "stylesheet");
+//			elt.setAttribute("href", "http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css");
+//			response.addProperty(MimeResponse.MARKUP_HEAD_ELEMENT, elt);
+			
+			//Basic error reporting for now
+			StringBuilder sb = new StringBuilder();
+			for(CompilationError error : errors) {
+				String at = error.getSource();
+				
+				//
+				sb.append("<p>");
+				sb.append("<div>Compilation error at ").append(at).append(" ").append(error.getLocation()).append("</div>");
+				sb.append("<div>");
+				sb.append(error.getMessage());
+				sb.append("</div>");
+				sb.append("</p>");
+			}
+			response.getWriter().print(sb.toString());
+		}
 	}
 
 	public void destroy() {

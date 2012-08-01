@@ -22,11 +22,12 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.juzu.application.ControllerMethod;
 import org.juzu.application.RenderLiteral;
 import org.juzu.impl.application.ApplicationProcessor;
-import org.juzu.impl.compiler.CompilerContext;
+import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
@@ -57,9 +58,9 @@ public class SimpleApplicationTestCase extends TestCase {
 		
 		//
 		RAMFileSystem out = new RAMFileSystem();
-		CompilerContext<RAMPath, RAMPath> compiler = new CompilerContext<RAMPath, RAMPath>(in, out);
+		Compiler<RAMPath, RAMPath> compiler = new Compiler<RAMPath, RAMPath>(in, out);
 		compiler.addAnnotationProcessor(new ApplicationProcessor());
-		assertTrue(compiler.compile());
+		assertEquals(Collections.emptyList(), compiler.compile());
 		
 		//
 		ClassLoader cl = new URLClassLoader(new URL[] { out.getURL() }, Thread.currentThread().getContextClassLoader());

@@ -20,15 +20,15 @@ package org.juzu.impl.template;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
 
 import javax.tools.JavaFileObject;
 
 import junit.framework.TestCase;
 
-import org.juzu.impl.compiler.CompilerContext;
+import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ram.RAMDir;
-import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
 import org.juzu.impl.spi.template.TemplateStub;
@@ -58,9 +58,9 @@ public class TemplateProcessorTestCase extends TestCase {
 		templates.addFile("B.gtmpl").update("<% out.print('hello') %>");
 		
 		RAMFileSystem output = new RAMFileSystem();
-		final CompilerContext<RAMPath, ?> compiler = new CompilerContext<RAMPath, RAMPath>(ramFS, output);
+		final Compiler<RAMPath, ?> compiler = new Compiler<RAMPath, RAMPath>(ramFS, output);
 		compiler.addAnnotationProcessor(new TemplateProcessor());
-		assertTrue(compiler.compile());
+		assertEquals(Collections.emptyList(), compiler.compile());
 		
 		//
 		Content content = compiler.getClassOuput(FileKey.newResourceName("bar.templates", "B.groovy"));

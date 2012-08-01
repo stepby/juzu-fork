@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.juzu.impl.spi.template.TemplateGenerator;
-import org.juzu.template.Location;
+import org.juzu.utils.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

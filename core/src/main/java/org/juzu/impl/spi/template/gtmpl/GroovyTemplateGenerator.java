@@ -34,7 +34,7 @@ import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.SectionType;
 import org.juzu.impl.utils.Safe;
-import org.juzu.template.Location;
+import org.juzu.utils.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

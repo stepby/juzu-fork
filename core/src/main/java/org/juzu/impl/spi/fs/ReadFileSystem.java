@@ -17,6 +17,7 @@
  */
 package org.juzu.impl.spi.fs;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
@@ -164,4 +165,6 @@ public abstract class ReadFileSystem<P> {
 	public abstract long getLastModified(P path) throws IOException;
 	
 	public abstract URL getURL(P path) throws IOException;
+	
+	public abstract File getFile(P path) throws IOException;
 }

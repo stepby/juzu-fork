@@ -17,6 +17,7 @@
  */
 package org.juzu.impl.spi.fs.ram;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
@@ -101,5 +102,10 @@ public class RAMFileSystem extends ReadWriteFileSystem<RAMPath> {
 	@Override
 	public void setContent(RAMPath file, Content<?> content) throws IOException {
 		((RAMFile) file).update(content);
+	}
+
+	@Override
+	public File getFile(RAMPath path) throws IOException {
+		return null;
 	}
 }

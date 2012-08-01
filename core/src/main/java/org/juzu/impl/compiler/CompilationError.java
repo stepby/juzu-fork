@@ -15,7 +15,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.template;
+package org.juzu.impl.compiler;
+
+import java.io.File;
 
 import org.juzu.utils.Location;
 
@@ -23,47 +25,37 @@ import org.juzu.utils.Location;
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
  */
-public class TemplateExecutionException extends RuntimeException {
+public class CompilationError {
 
-	private final String templateId;
+	private final String source;
+	
+	private final File sourceFile;
 	
 	private final Location location;
 	
-	private final String text;
+	private final String message;
 	
-	public TemplateExecutionException(String templateId, Location location, String text, String msg, Throwable cause) {
-		super(msg, cause);
-		this.templateId = templateId;
+	public CompilationError(String source, File sourceFile, Location location, String message) {
+		this.source = source;
+		this.sourceFile = sourceFile;
 		this.location = location;
-		this.text = text;
+		this.message = message;
 	}
-	
-	public TemplateExecutionException(String templateId, Location location, String text, Throwable cause) {
-		super(cause);
-		this.templateId = templateId;
-		this.location = location;
-		this.text = text;
+
+	public String getSource() {
+		return source;
 	}
-	
-	public String getText() {
-		return text;
+
+	public File getSourceFile() {
+		return sourceFile;
 	}
-	
-	public int getLine() {
-		return text != null ? location.getLine() : null; 
+
+	public Location getLocation() {
+		return location;
 	}
-	
-	@Override
+
 	public String getMessage() {
-		StringBuilder b = new StringBuilder("Groovy template exception");
-		if(location != null)
-			b.append(" at ").append(location);
-		if(text != null)
-			b.append(" script ").append(text);
-		if(templateId != null)
-			b.append(" for template ").append(templateId);
-		return b.toString();
+		return message;
 	}
 }
