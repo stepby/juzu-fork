@@ -17,7 +17,6 @@
  */
 package org.juzu.application;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,11 +29,11 @@ import javax.inject.Singleton;
 
 import org.juzu.Resource;
 import org.juzu.impl.cdi.Export;
-import org.juzu.impl.cdi.InvocationContext;
-import org.juzu.impl.cdi.InvocationScoped;
+import org.juzu.impl.cdi.ScopeController;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.request.ActionContext;
 import org.juzu.request.RenderContext;
+import org.juzu.request.RenderScoped;
 import org.juzu.request.RequestContext;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
@@ -84,7 +83,7 @@ public class ApplicationContext {
 	public void invoke(RequestContext context) {
 		try {
 			current.set(context);
-			InvocationContext.start();
+			ScopeController.start(context.getPhase());
 			if(context instanceof RenderContext) {
 				doInvoke((RenderContext) context);
 			} else if(context instanceof ActionContext) {
@@ -92,7 +91,7 @@ public class ApplicationContext {
 			} else throw new UnsupportedOperationException();
 		} finally {
 			current.set(null);
-			InvocationContext.stop();
+			ScopeController.stop();
 		}
 	}
 	
@@ -121,12 +120,12 @@ public class ApplicationContext {
 	}
 	
 	@Produces
-	@InvocationScoped
+	@RenderScoped
 	public Printer getPrinter() {
 		RequestContext context = current.get();
 		if(context instanceof RenderContext) {
 			return ((RenderContext) context).getPrinter();
-		} else throw new UnsupportedOperationException("handle me gracefully");
+		} else throw new AssertionError("dose not make sense");
 	}
 	
 	@Produces

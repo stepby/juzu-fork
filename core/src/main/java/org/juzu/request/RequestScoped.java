@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.cdi;
+package org.juzu.request;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -32,6 +32,6 @@ import javax.enterprise.context.NormalScope;
 @NormalScope
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface InvocationScoped {
+public @interface RequestScoped {
 
 }

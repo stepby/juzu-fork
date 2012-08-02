@@ -18,59 +18,38 @@
 package org.juzu.impl.cdi;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
+
+import org.juzu.application.Phase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class InvocationContext implements Context {
+public class ContextImpl implements Context {
 	
-	private static final ThreadLocal<Map<Contextual<?>, Object>> current = new ThreadLocal<Map<Contextual<?>,Object>>();
+	private final ScopeController controller;
 	
-	private static final Map<Contextual<?>, Object> EMPTY_MAP = Collections.emptyMap();
+	private final Phase phase;
 	
-	private static final InvocationContext INSTANCE = new InvocationContext();
+	private final Class<? extends Annotation> scopeType;
 	
-	public static InvocationContext getInstance() {
-		return INSTANCE;
-	}
-	
-	public static void start() throws IllegalStateException {
-		if(INSTANCE.current.get() != null) throw new IllegalStateException("Already started");
-		INSTANCE.current.set(EMPTY_MAP);
-	}
-	
-	public static void stop() throws IllegalStateException {
-		INSTANCE.current.set(null);
+	public ContextImpl(ScopeController controller, Phase phase, Class<? extends Annotation> scopeType) {
+		this.controller = controller;
+		this.phase = phase;
+		this.scopeType = scopeType;
 	}
 
 	public Class<? extends Annotation> getScope() {
-		return InvocationScoped.class;
+		return scopeType;
 	}
 
 	public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
-		Map<Contextual<?>, Object> map = current.get();
-		if(map == null) throw new ContextNotActiveException();
-		Object o = map.get(contextual);
-		if(o == null) {
-			if(creationalContext != null) {
-				o = contextual.create(creationalContext);
-				if(map == EMPTY_MAP) {
-					current.set(map = new HashMap<Contextual<?>, Object>());
-				}
-				map.put(contextual, o);
-			}
-		}
-		return (T)o;
+		return controller.get(phase, contextual, creationalContext);
 	}
 
 	public <T> T get(Contextual<T> contextual) {
@@ -78,6 +57,6 @@ public class InvocationContext implements Context {
 	}
 
 	public boolean isActive() {
-		return current.get() != null;
+		return controller.currentPhase.get() == phase;
 	}
 }
