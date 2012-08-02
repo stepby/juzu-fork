@@ -35,10 +35,10 @@ import junit.framework.TestCase;
 public class DiskFileSystemTestCase extends TestCase {
 	
 	public void testFoo() throws IOException {
-		File file = new File(System.getProperty("test.resources"));
-		assertNotNull(file);
-		assertTrue(file.isDirectory());
-		doTest(new DiskFileSystem(file), file);
+		File root = new File(System.getProperty("test.resources"));
+		assertNotNull(root);
+		assertTrue(root.isDirectory());
+		doTest(new DiskFileSystem(root, "org"), root);
 	}
 	
 	private <P> void doTest(ReadFileSystem<P> fs, P root) throws IOException {

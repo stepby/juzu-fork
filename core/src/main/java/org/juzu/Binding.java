@@ -15,25 +15,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.request;
+package org.juzu;
 
-import java.util.Map;
-
-import org.juzu.application.Phase;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ActionContext extends RequestContext {
 
-	public ActionContext(Map<String, String[]> parameters) {
-		super(parameters);
-	}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Binding {
 
-	@Override
-	public Phase getPhase() {
-		return Phase.ACTION;
-	}
+	String name();
+	
+	String value() default "";
 }

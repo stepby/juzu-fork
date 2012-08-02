@@ -15,44 +15,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.request;
+package org.juzu;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.juzu.URLBuilder;
-import org.juzu.application.ControllerMethod;
-import org.juzu.application.Phase;
-import org.juzu.text.Printer;
+import javax.enterprise.context.NormalScope;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class RenderContext extends RequestContext {
-	
-	private final Printer printer;
-	
-	private URLBuilderContext urlBuilderContext;
+@NormalScope
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ActionScoped {
 
-	public RenderContext(Map<String, String[]> parameters, Printer printer, URLBuilderContext urlBuilderContext) {
-		super(parameters);
-		
-		//
-		this.printer = printer;
-		this.urlBuilderContext = urlBuilderContext;
-	}
-	
-	public Printer getPrinter() {
-		return printer;
-	}
-
-	@Override
-	public Phase getPhase() {
-		return Phase.RENDER;
-	}
-	
-	public URLBuilder createURLBuilder(ControllerMethod method) {
-		return urlBuilderContext.createURLBuilder(method.getPhase());
-	}
 }

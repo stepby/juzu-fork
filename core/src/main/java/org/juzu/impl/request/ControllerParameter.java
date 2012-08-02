@@ -15,53 +15,52 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.application;
+package org.juzu.impl.request;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.juzu.impl.request.ControllerMethod;
+import org.juzu.impl.utils.Safe;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ApplicationDescriptor {
+public class ControllerParameter {
 
-	private final String packageName;
-	
 	private final String name;
 	
-	private final List<ControllerMethod> controllerMethods;
+	private final String value;
 	
-	private final String templatesPackageName;
-	
-	public ApplicationDescriptor(
-		String packageName, 
-		String name, 
-		String templatesPackageName, 
-		List<ControllerMethod> controllerMethods) {
-		
-		this.packageName = packageName;
-		this.name = name;
-		this.templatesPackageName = templatesPackageName;
-		this.controllerMethods = Collections.unmodifiableList(controllerMethods);
+	public ControllerParameter(String name) throws NullPointerException {
+		this(name, null);
 	}
-
-	public String getPackageName() {
-		return packageName;
+	
+	public ControllerParameter(String name, String value) throws NullPointerException {
+		if(name == null) throw new NullPointerException("No null parameter name not accepted");
+		
+		//
+		this.name = name;
+		this.value = value;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public List<ControllerMethod> getControllerMethods() {
-		return controllerMethods;
+	public String getValue() {
+		return value;
 	}
-
-	public String getTemplatesPackageName() {
-		return templatesPackageName;
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) return true;
+		else if(obj instanceof ControllerParameter) {
+			ControllerParameter that = (ControllerParameter) obj;
+			return name.equals(that.name) && Safe.equals(value, that.value);
+		} else return false;
+	}
+	
+	@Override
+	public String toString() {
+		return "ControllerParameter[name=" + name +", value=" + value + "]";
 	}
 }

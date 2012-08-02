@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.juzu.request;
+package org.juzu.impl.request;
 
 import org.juzu.URLBuilder;
 import org.juzu.application.Phase;

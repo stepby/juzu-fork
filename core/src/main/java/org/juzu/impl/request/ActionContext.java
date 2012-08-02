@@ -15,23 +15,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.application;
+package org.juzu.impl.request;
+
+import java.util.Map;
+
+import org.juzu.application.Phase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class RenderLiteral extends PhaseLiteral {
+public class ActionContext extends RequestContext {
 
-	private final 	ControllerMethod descriptor;
-	
-	public RenderLiteral(ControllerMethod descriptor) {
-		if(descriptor == null) throw new NullPointerException();
-		this.descriptor = descriptor;
+	public ActionContext(Map<String, String[]> parameters) {
+		super(parameters);
 	}
-	
-	public ControllerMethod getDescriptor() {
-		return descriptor;
+
+	@Override
+	public Phase getPhase() {
+		return Phase.ACTION;
 	}
 }

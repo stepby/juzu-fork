@@ -15,23 +15,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.request;
+package org.juzu.impl.utils;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.enterprise.context.NormalScope;
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@NormalScope
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RenderScoped {
+public class Builder {
+	
+	public static <K, V> Map<K, V> map(K key, V value) {
+		return new Map<K, V>().put(key, value);
+	}
 
+	public static class Map<K, V> {
+		
+		private java.util.Map<K, V> map;
+		
+		public Map() {
+			this.map = new HashMap<K, V>();
+		}
+		
+		public Map<K, V> put(K key, V value) {
+			map.put(key, value);
+			return this;
+		}
+		
+		public java.util.Map<K, V> build() {
+			return map;
+		}
+	}
 }

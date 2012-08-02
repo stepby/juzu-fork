@@ -24,10 +24,11 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.juzu.application.ControllerMethod;
-import org.juzu.application.RenderLiteral;
+import org.juzu.application.PhaseLiteral;
 import org.juzu.impl.application.ApplicationProcessor;
 import org.juzu.impl.compiler.Compiler;
+import org.juzu.impl.request.ControllerMethod;
+import org.juzu.impl.request.ControllerParameter;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
@@ -67,7 +68,7 @@ public class SimpleApplicationTestCase extends TestCase {
 		Class aClass = cl.loadClass("foo.A");
 		Class a_Class = cl.loadClass("foo.A_");
 		Field f = a_Class.getField("render");
-		RenderLiteral l = (RenderLiteral)f.get(null);
+		PhaseLiteral l = (PhaseLiteral)f.get(null);
 		assertNotNull(l);
 		
 		ControllerMethod d = l.getDescriptor();
@@ -77,6 +78,6 @@ public class SimpleApplicationTestCase extends TestCase {
 		assertEquals("render", method.getName());
 		assertSame(aClass, method.getDeclaringClass());
 		assertEquals(Arrays.<Class<?>>asList(String.class), Arrays.asList(method.getParameterTypes()));
-		assertEquals(Arrays.asList("name"), d.getNames());
+		assertEquals(Arrays.asList(new ControllerParameter("name")), d.getArgumentParameters());
 	}
 }

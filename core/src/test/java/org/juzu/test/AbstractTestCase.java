@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  */
 public abstract class AbstractTestCase extends TestCase {
 
-	protected final long waitForOneMillis() {
+	public final long waitForOneMillis() {
 		long snapshot = System.currentTimeMillis();
 		while(true) {
 			try {
@@ -44,5 +44,15 @@ public abstract class AbstractTestCase extends TestCase {
 				throw afe;
 			}
 		}
+	}
+	
+	public static void fail(Throwable t) {
+		throw failure(t);
+	}
+	
+	public static AssertionFailedError failure(Throwable t) {
+		AssertionFailedError error = new AssertionFailedError();
+		error.initCause(t);
+		return error;
 	}
 }

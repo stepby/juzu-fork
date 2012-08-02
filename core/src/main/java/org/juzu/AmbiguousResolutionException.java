@@ -15,23 +15,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.request;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.enterprise.context.NormalScope;
+package org.juzu;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@NormalScope
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ActionScoped {
+public class AmbiguousResolutionException extends RuntimeException {
 
+	public AmbiguousResolutionException() {
+		
+	}
+	
+	public AmbiguousResolutionException(String message) {
+		super(message);
+	}
+	
+	public AmbiguousResolutionException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
+	public AmbiguousResolutionException(Throwable cause) {
+		super(cause);
+	}
 }

@@ -45,16 +45,17 @@ import javax.tools.StandardLocation;
 
 import org.juzu.Action;
 import org.juzu.Application;
+import org.juzu.Binding;
 import org.juzu.Render;
 import org.juzu.URLBuilder;
-import org.juzu.application.ApplicationContext;
 import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.ControllerMethod;
 import org.juzu.application.Phase;
-import org.juzu.application.RenderLiteral;
+import org.juzu.application.PhaseLiteral;
+import org.juzu.impl.request.ControllerMethod;
+import org.juzu.impl.request.ControllerParameter;
+import org.juzu.impl.request.RenderContext;
 import org.juzu.impl.utils.PackageMap;
 import org.juzu.impl.utils.Safe;
-import org.juzu.request.RenderContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -64,6 +65,14 @@ import org.juzu.request.RenderContext;
 @javax.annotation.processing.SupportedAnnotationTypes({"org.juzu.Application"})
 @javax.annotation.processing.SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class ApplicationProcessor extends AbstractProcessor {
+	
+	private final static String PHASE_LITERAL = PhaseLiteral.class.getSimpleName();
+	
+	private final static String CTRL_METHOD = ControllerMethod.class.getSimpleName();
+	
+	private final static String PHASE = Phase.class.getSimpleName();
+	
+	private final static String CTRL_PARAM = ControllerParameter.class.getSimpleName();
 	
 	static class ApplicationMetaData {
 		private final PackageElement packageElt;
@@ -110,10 +119,13 @@ public class ApplicationProcessor extends AbstractProcessor {
 		
 		private final ExecutableType type;
 		
-		public MethodMetaData(Phase phase, ExecutableElement element) {
+		private final List<ControllerParameter> annotationParameters;
+		
+		public MethodMetaData(Phase phase, ExecutableElement element, List<ControllerParameter> parameters) {
 			this.phase = phase;
 			this.element = element;
 			this.type = (ExecutableType)element.asType();
+			this.annotationParameters = parameters;
 		}
 		
 		public CharSequence getName() {
@@ -186,8 +198,25 @@ public class ApplicationProcessor extends AbstractProcessor {
 				}
 				
 				//
-				Phase phase = elts == actions ? Phase.ACTION : Phase.RENDER;
-				a.methods.add(new MethodMetaData(phase, executableElt));
+				Phase phase;
+				Binding[] bindings;
+				if(elts == actions) {
+					bindings = executableElt.getAnnotation(Action.class).parameters();
+					phase = Phase.ACTION;
+				} else {
+					bindings = executableElt.getAnnotation(Render.class).parameters();
+					phase = Phase.RENDER;
+				}
+				
+				//
+				List<ControllerParameter> parameters = new ArrayList<ControllerParameter>();
+				for(Binding binding : bindings) {
+					String value = binding.value().isEmpty() ? null : binding.value();
+					parameters.add(new ControllerParameter(binding.name(), value));
+				}
+				
+				//
+				a.methods.add(new MethodMetaData(phase, executableElt, parameters));
 			}
 		}
 		
@@ -215,7 +244,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 					writer.append("\"").append(foo.packageName).append("\",");
 					writer.append("\"").append(foo.name).append("\",");
 					writer.append("\"").append(templatesPackageName).append("\",");
-					writer.append("Arrays.<").append(ControllerMethod.class.getSimpleName()).append(">asList(");
+					writer.append("Arrays.<").append(CTRL_METHOD).append(">asList(");
 					for(ControllerMetaData bar : foo.controllers) {
 						for(Iterator<MethodMetaData> j = bar.methods.iterator(); j.hasNext();) {
 							MethodMetaData exe = j.next();
@@ -261,14 +290,16 @@ public class ApplicationProcessor extends AbstractProcessor {
 				try {
 					PackageElement pkg = processingEnv.getElementUtils().getPackageOf(entry.getValue().typeElt);
 					writer.append("package ").append(pkg.getQualifiedName()).append(";\n");
-					writer.append("import ").append(RenderLiteral.class.getName()).append(";\n");
+					writer.append("import ").append(PhaseLiteral.class.getName()).append(";\n");
 					writer.append("import ").append(ControllerMethod.class.getName()).append(";\n");
+					writer.append("import ").append(ControllerParameter.class.getName()).append(";\n");
 					writer.append("import ").append(Safe.class.getName()).append(";\n");
+					writer.append("import ").append(Arrays.class.getName()).append(";\n");
 					writer.append("import ").append(Phase.class.getName()).append(";\n");
 					writer.append("import ").append(URLBuilder.class.getName()).append(";\n");
 					writer.append("import ").append(ApplicationContext.class.getName()).append(";\n");
 					writer.append("import ").append(RenderContext.class.getName()).append(";\n");
-					writer.append("public class ").append(entry.getValue().typeElt.getSimpleName()).append("_ {\n");
+					writer.append("public class ").append(entry.getValue().typeElt.getSimpleName()).append("_  {\n");
 					
 					//
 					int index = 0;
@@ -276,8 +307,8 @@ public class ApplicationProcessor extends AbstractProcessor {
 						//Method
 						writer.append("private static final ").append(ControllerMethod.class.getSimpleName()).append(" method_")
 						.append(String.valueOf(index)).append(" = ");
-						writer.append("new ").append(ControllerMethod.class.getSimpleName()).append("(");
-						writer.append(Phase.class.getSimpleName()).append(".").append(Phase.RENDER.name());
+						writer.append("new ").append(CTRL_METHOD).append("(");
+						writer.append(PHASE).append(".").append(method.phase.name());
 						writer.append(",");
 						writer.append(type).append(".class");
 						writer.append(',');
@@ -288,9 +319,22 @@ public class ApplicationProcessor extends AbstractProcessor {
 						}
 						writer.append(")");
 						
-						for(VariableElement ve : method.element.getParameters()) {
-							writer.append(",\"").append(ve.getSimpleName()).append("\"");
+						writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
+						for(Iterator<ControllerParameter> i = method.annotationParameters.iterator(); i.hasNext();) {
+							ControllerParameter boundParameter = i.next();
+							String name = "\"" + boundParameter.getName() + "\"";
+							String value = boundParameter.getValue() == null ? "null" : "\"" + boundParameter.getValue() + "\"";
+							writer.append("new ").append(CTRL_PARAM).append("(").append(name).append(", ").append(value).append(")");
+							if(i.hasNext()) writer.append(", ");
 						}
+						writer.append(")");
+						writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
+						for(Iterator<? extends VariableElement> i = method.element.getParameters().iterator(); i.hasNext();) {
+							VariableElement ve = i.next();
+							writer.append("new ").append(CTRL_PARAM).append("(\"").append(ve.getSimpleName()).append("\")");
+							if(i.hasNext()) writer.append(", ");
+						}
+						writer.append(")");
 						writer.append(");\n");
 						
 						//URL builder
@@ -305,12 +349,26 @@ public class ApplicationProcessor extends AbstractProcessor {
 						}
 						
 						writer.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(method_");
-						writer.append(Integer.toOctalString(index));
+						writer.append(Integer.toString(index));
+						switch(argDecls.size()) {
+							case 0: break;
+							case 1:
+								writer.append(", (Object) ").append(argDecls.get(0).getSimpleName());
+								break;
+							default:
+								writer.append(", new Object[] {");
+								for(int i = 0; i < argDecls.size(); i++) {
+									if(i > 0) writer.append(", ");
+									writer.append("(Object)").append(argDecls.get(i).getSimpleName());
+								}
+								writer.append("}");
+								break;
+						}
 						writer.append("); }\n");
 						
 						//Maybe remove that
-						writer.append("public static final RenderLiteral ").append(method.getName()).append(" = ");
-						writer.append("new RenderLiteral(method_").append(Integer.toBinaryString(index)).append(");\n");
+						writer.append("public static final ").append(PHASE_LITERAL).append(" ").append(method.getName()).append(" = ");
+						writer.append("new ").append(PHASE_LITERAL).append("(method_").append(Integer.toString(index)).append(");\n");
 						
 						index++;
 					}

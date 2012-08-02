@@ -26,9 +26,9 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
+import org.juzu.ActionScoped;
+import org.juzu.RenderScoped;
 import org.juzu.application.Phase;
-import org.juzu.request.ActionScoped;
-import org.juzu.request.RenderScoped;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

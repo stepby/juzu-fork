@@ -17,6 +17,8 @@
  */
 package org.juzu.application;
 
+import org.juzu.impl.request.ControllerMethod;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -24,4 +26,14 @@ package org.juzu.application;
  */
 public class PhaseLiteral {
 
+	private final ControllerMethod descriptor;
+	
+	public PhaseLiteral(ControllerMethod descriptor) {
+		if(descriptor == null) throw new NullPointerException();
+		this.descriptor = descriptor;
+	}
+	
+	public ControllerMethod getDescriptor() {
+		return descriptor;
+	}
 }

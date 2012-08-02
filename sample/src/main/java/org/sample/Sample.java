@@ -27,7 +27,7 @@ import org.juzu.Action;
 import org.juzu.Render;
 import org.juzu.Resource;
 import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.RenderLiteral;
+import org.juzu.application.PhaseLiteral;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
 
@@ -50,7 +50,7 @@ public class Sample {
 	Printer printer;
 	
 	@Action
-	public RenderLiteral action() {
+	public PhaseLiteral action() {
 		return Sample_.render;
 	}
 	
@@ -63,6 +63,17 @@ public class Sample {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("action", "" + Sample_.actionURL());
 		data.put("render", "" + Sample_.renderURL());
+		data.put("foo", "" + Sample_.fooURL("bar"));
+		template.render(printer, data);
+	}
+	
+	@Render
+	public void foo(String name) throws IOException {
+		System.out.println("foo");
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.put("action", "" + Sample_.actionURL());
+		data.put("render", "" + Sample_.renderURL());
+		data.put("foo", "" + Sample_.fooURL("bar"));
 		template.render(printer, data);
 	}
 }

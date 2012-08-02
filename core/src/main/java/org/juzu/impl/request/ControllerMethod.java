@@ -15,12 +15,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.application;
+package org.juzu.impl.request;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import org.juzu.application.Phase;
+import org.juzu.impl.utils.Safe;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -35,16 +36,23 @@ public class ControllerMethod {
 	
 	private final Method method;
 	
-	private final List<String> names;
+	private final List<ControllerParameter> annotationParameters;
 	
-	public ControllerMethod(Phase phase, Class<?> type, Method method, String ... names) {
+	private final List<ControllerParameter> argumentParameters;
+	
+	public ControllerMethod(
+		Phase phase, Class<?> type, 
+		Method method, 
+		List<ControllerParameter> boundParameters,
+		List<ControllerParameter> argumentParameters) {
 		if(type == null) throw new NullPointerException();
 		if(method == null) throw new NullPointerException();
 		
 		this.phase = phase;
 		this.type = type;
 		this.method = method;
-		this.names = Collections.unmodifiableList(Arrays.asList(names));
+		this.annotationParameters = Safe.unmodifiableList(boundParameters);
+		this.argumentParameters = Safe.unmodifiableList(argumentParameters);
 	}
 	
 	public Phase getPhase() {
@@ -63,8 +71,12 @@ public class ControllerMethod {
 		return method.getName();
 	}
 	
-	public List<String> getNames() {
-		return names;
+	public List<ControllerParameter> getAnnotationParameters() {
+		return annotationParameters;
+	}
+	
+	public List<ControllerParameter> getArgumentParameters() {
+		return argumentParameters;
 	}
 	
 	@Override

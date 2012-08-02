@@ -36,19 +36,20 @@ import javax.enterprise.inject.spi.Bean;
 import javax.inject.Inject;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.MimeResponse;
 import javax.portlet.Portlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.juzu.application.ApplicationContext;
 import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.Bootstrap;
+import org.juzu.impl.application.ApplicationContext;
 import org.juzu.impl.application.ApplicationProcessor;
+import org.juzu.impl.application.Bootstrap;
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
+import org.juzu.impl.request.ActionContext;
+import org.juzu.impl.request.RenderContext;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.impl.spi.cdi.weld.WeldContainer;
 import org.juzu.impl.spi.fs.Change;
@@ -60,11 +61,8 @@ import org.juzu.impl.spi.fs.ram.RAMPath;
 import org.juzu.impl.spi.fs.war.WarFileSystem;
 import org.juzu.impl.template.TemplateProcessor;
 import org.juzu.impl.utils.DevClassLoader;
-import org.juzu.request.ActionContext;
-import org.juzu.request.RenderContext;
 import org.juzu.text.Printer;
 import org.juzu.text.WriterPrinter;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -97,7 +95,8 @@ public class JuzuPortlet implements Portlet {
 	}
 	
 	private Collection<CompilationError> boot() throws PortletException {
-		long l = -System.currentTimeMillis();
+		boolean wasNull = applicationContext == null;
+		long t = -System.currentTimeMillis();
 		if(prod) {
 			if(applicationContext == null) {
 				try {
@@ -112,12 +111,15 @@ public class JuzuPortlet implements Portlet {
 			try {
 				if(devScanner != null) {
 					Map<String, Change> changes = devScanner.scan();
-					if(changes.size() > 0) applicationContext = null;
+					if(changes.size() > 0) {
+						System.out.println("Detected changes: " + changes);
+						applicationContext = null;
+					}
 				}
 				
 				//
 				if(applicationContext == null) {
-					System.out.println("Building dev application");
+					System.out.println("Building application");
 					
 					//
 					List<URL> classPath = new ArrayList<URL>();
@@ -149,8 +151,11 @@ public class JuzuPortlet implements Portlet {
 			}
 		}
 		
-		l += System.currentTimeMillis();
-		System.out.println("Booted in " + l + " ms");
+		t += System.currentTimeMillis();
+		
+		if(wasNull && applicationContext != null) {
+			System.out.println("Booted in " + t + " ms");
+		}
 		return Collections.emptyList();
 	}
 	
