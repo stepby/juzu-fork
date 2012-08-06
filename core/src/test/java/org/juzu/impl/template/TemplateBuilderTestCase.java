@@ -36,7 +36,7 @@ import junit.framework.TestCase;
 public class TemplateBuilderTestCase extends TestCase {
 
 	public void testFoo() throws Exception {
-		TemplateParser parser = new TemplateParser();
+		ASTBuilder parser = new ASTBuilder();
 		GroovyTemplateGenerator templateBuilder = new GroovyTemplateGenerator();
 		parser.parse("a<%=foo%>c").generate(templateBuilder);
 		GroovyTemplate template = templateBuilder.build("template_" + Math.abs(new Random().nextLong()));

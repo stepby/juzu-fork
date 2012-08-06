@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.SectionType;
-import org.juzu.impl.template.TemplateParser;
 import org.juzu.utils.Location;
 
 import junit.framework.TestCase;
@@ -36,7 +35,7 @@ import junit.framework.TestCase;
  */
 public class TemplateParserTestCase extends TestCase {
 	
-	private TemplateParser parser = new TemplateParser();
+	private ASTBuilder parser = new ASTBuilder();
 	
 	public void testEmpty() {
 		assertEquals(Collections.emptyList(), parser.parse("").getSections());
@@ -82,6 +81,10 @@ public class TemplateParserTestCase extends TestCase {
 		assertEquals(Arrays.asList(new ASTNode.Section(SectionType.EXPR, "<")), parser.parse("<%=<%>").getSections());
 	}
 	
+	public void testCurlyExpression() {
+		assertEquals(Arrays.<ASTNode.Section>asList(new ASTNode.Section(SectionType.EXPR, "a")), parser.parse("${a}").getSections());
+	}
+	
 	public void testSimpleScript1() {
 		assertEquals(Arrays.asList(
 			new ASTNode.Section(SectionType.STRING, "a"),
@@ -105,7 +108,7 @@ public class TemplateParserTestCase extends TestCase {
 		assertEquals(new Location(1,1), list.get(0).getItems().get(0).getPosition());
 		assertEquals(new Location(2,1), list.get(0).getItems().get(1).getPosition());
 		assertEquals(new Location(1,2), list.get(0).getItems().get(2).getPosition());
-		assertEquals(new Location(5,2), list.get(1).getItems().get(0).getPosition());
+		assertEquals(new Location(2,2), list.get(1).getItems().get(0).getPosition());
 		assertEquals(new Location(12,2), list.get(2).getItems().get(0).getPosition());
 	}
 }
