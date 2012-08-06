@@ -19,7 +19,6 @@ package org.juzu.impl.spi.cdi.weld;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.enterprise.inject.spi.BeanManager;
@@ -33,7 +32,6 @@ import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.exceptions.UnsupportedOperationException;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 

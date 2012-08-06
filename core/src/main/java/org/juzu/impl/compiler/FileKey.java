@@ -20,8 +20,6 @@ package org.juzu.impl.compiler;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
 
 import javax.tools.JavaFileObject;
 

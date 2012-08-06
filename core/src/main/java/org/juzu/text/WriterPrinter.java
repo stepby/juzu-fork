@@ -18,7 +18,6 @@
 package org.juzu.text;
 
 import java.io.IOException;
-import java.io.Writer;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

@@ -18,7 +18,6 @@
 package org.juzu.impl.application;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -31,7 +30,6 @@ import javax.inject.Singleton;
 import org.juzu.RenderScoped;
 import org.juzu.Resource;
 import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.Phase;
 import org.juzu.impl.cdi.Export;
 import org.juzu.impl.cdi.ScopeController;
 import org.juzu.impl.request.ActionContext;
@@ -138,7 +136,7 @@ public class ApplicationContext {
 	public Template getRenderer(InjectionPoint point) {
 		Bean<?> bean = point.getBean();
 		Resource template = point.getAnnotated().getAnnotation(Resource.class);
-		StringBuilder id = new StringBuilder(descriptor.getPackageName());
+		StringBuilder id = new StringBuilder(descriptor.getTemplatesPackageName());
 		if(id.length() > 0)  id.append('.');
 		id.append(template.value(), 0, template.value().indexOf('.'));
 		return new Template(id.toString());

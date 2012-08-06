@@ -79,5 +79,9 @@ public class SimpleApplicationTestCase extends TestCase {
 		assertSame(aClass, method.getDeclaringClass());
 		assertEquals(Arrays.<Class<?>>asList(String.class), Arrays.asList(method.getParameterTypes()));
 		assertEquals(Arrays.asList(new ControllerParameter("name")), d.getArgumentParameters());
+		
+		Class applicationClass = cl.loadClass("foo.FooApplication");
+		Method renderMethod = applicationClass.getDeclaredMethod("renderURL", String.class);
+		assertEquals("renderURL", renderMethod.getName());
 	}
 }

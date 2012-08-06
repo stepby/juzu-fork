@@ -43,7 +43,6 @@ import org.juzu.Resource;
 import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.spi.template.TemplateProvider;
 import org.juzu.impl.utils.PackageMap;
-import org.juzu.template.Template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

@@ -83,7 +83,7 @@ public class RenderContext extends RequestContext {
 		//Fill in argument parameters
 		for(int i = 0; i < values.length; i++) {
 			if(values[i] != null) {
-				builder.setParameter(method.getArgumentParameters().get(i).getName(), String.valueOf(i));
+				builder.setParameter(method.getArgumentParameters().get(i).getName(), String.valueOf(values[i]));
 			}
 		}
 		

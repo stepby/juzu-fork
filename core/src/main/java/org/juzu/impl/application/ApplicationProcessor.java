@@ -194,9 +194,9 @@ public class ApplicationProcessor extends AbstractProcessor {
 					String fqn = pkg.getQualifiedName().toString();
 
 					//
-					ApplicationMetaData found = applications.resolveValue(fqn);
-					if(found == null) throw new UnsupportedOperationException("handle me gracefully: could not find application for package " + fqn);
-					else found.controllers.add(a);
+					ApplicationMetaData application = applications.resolveValue(fqn);
+					if(application == null) throw new UnsupportedOperationException("handle me gracefully: could not find application for package " + fqn);
+					else application.controllers.add(a);
 				}
 				
 				//
@@ -222,7 +222,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 			}
 		}
 		
-		//
+		//Generate applications
 		for(int i = 0; i < applications.getSize(); i++) 	{
 			ApplicationMetaData foo = applications.getValue(i);
 			try {
@@ -237,10 +237,23 @@ public class ApplicationProcessor extends AbstractProcessor {
 					}
 					
 					writer.append("package ").append(foo.packageElt.getQualifiedName()).append(";\n");
+					
+					//Imports
 					writer.append("import ").append(ApplicationDescriptor.class.getName()).append(";\n");
+					writer.append("import ").append(PhaseLiteral.class.getName()).append(";\n");
 					writer.append("import ").append(ControllerMethod.class.getName()).append(";\n");
+					writer.append("import ").append(ControllerParameter.class.getName()).append(";\n");
+					writer.append("import ").append(Tools.class.getName()).append(";\n");
 					writer.append("import ").append(Arrays.class.getName()).append(";\n");
+					writer.append("import ").append(Phase.class.getName()).append(";\n");
+					writer.append("import ").append(URLBuilder.class.getName()).append(";\n");
+					writer.append("import ").append(ApplicationContext.class.getName()).append(";\n");
+					writer.append("import ").append(RenderContext.class.getName()).append(";\n");
+					
+					//open class descriptor
 					writer.append("public class ").append(foo.name).append(" {\n");
+					
+					//Descriptor
 					writer.append("public static final ").append(ApplicationDescriptor.class.getSimpleName());
 					writer.append(" DESCRIPTOR = new ").append(ApplicationDescriptor.class.getSimpleName()).append("(");
 					writer.append("\"").append(foo.packageName).append("\",");
@@ -256,6 +269,80 @@ public class ApplicationProcessor extends AbstractProcessor {
 						}
 					}
 					writer.append("));\n");
+					
+					//
+					for(ControllerMetaData controller : foo.controllers) {
+						int index = 0;
+						for(MethodMetaData method : controller.methods) {
+							String controllerFQN = controller.typeElt.getQualifiedName().toString();
+							
+							writer.append("private static final ").append(CTRL_METHOD).append(" method_")
+							.append(String.valueOf(index)).append(" = ");
+							writer.append("new ").append(CTRL_METHOD).append("(");
+							writer.append(PHASE).append(".").append(method.phase.name());
+							writer.append(",");
+							writer.append(controllerFQN).append(".class");
+							writer.append(',');
+							writer.append(TOOLS).append(".safeGetMethod(").append(controllerFQN).append(".class,\"").append(method.getName()).append("\"");
+							for(TypeMirror foobar : method.type.getParameterTypes()) {
+								TypeMirror earsed = processingEnv.getTypeUtils().erasure(foobar);
+								 writer.append(",").append(earsed.toString()).append(".class");
+							}
+							writer.append(")");
+							
+							writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
+							for(Iterator<ControllerParameter> j = method.annotationParameters.iterator(); j.hasNext();) {
+								ControllerParameter boundParameter = j.next();
+								String name = "\"" + boundParameter.getName() + "\"";
+								String value = boundParameter.getValue() == null ? "null" : "\"" + boundParameter.getValue() + "\"";
+								writer.append("new ").append(CTRL_PARAM).append("(").append(name).append(", ").append(value).append(")");
+								if(j.hasNext()) writer.append(", ");
+							}
+							writer.append(")");
+							writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
+							for(Iterator<? extends VariableElement> j = method.element.getParameters().iterator(); j.hasNext();) {
+								VariableElement ve = j.next();
+								writer.append("new ").append(CTRL_PARAM).append("(\"").append(ve.getSimpleName()).append("\")");
+								if(j.hasNext()) writer.append(", ");
+							}
+							writer.append(")");
+							writer.append(");\n");
+							
+							//URL builder
+							writer.append("public static ").append(URLBuilder.class.getSimpleName()).append(" ").append(method.getName()).append("URL(");
+							List<? extends VariableElement> argDecls = method.element.getParameters();
+							List<? extends TypeMirror> argTypes = method.type.getParameterTypes();
+							for(int j = 0; j < argDecls.size(); j++) {
+								if(j > 0) writer.append(',');
+								TypeMirror argumentType = argTypes.get(j);
+								VariableElement argumentElement = argDecls.get(j);
+								writer.append(argumentType.toString()).append(" ").append(argumentElement.getSimpleName().toString());
+							}
+							
+							writer.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(method_");
+							writer.append(Integer.toString(index));
+							switch(argDecls.size()) {
+								case 0: break;
+								case 1:
+									writer.append(", (Object) ").append(argDecls.get(0).getSimpleName());
+									break;
+								default:
+									writer.append(", new Object[] {");
+									for(int j = 0; j < argDecls.size(); j++) {
+										if(j > 0) writer.append(", ");
+										writer.append("(Object)").append(argDecls.get(j).getSimpleName());
+									}
+									writer.append("}");
+									break;
+							}
+							writer.append("); }\n");
+
+							//
+							index++;
+						}
+					}
+					
+					//Close class declaration
 					writer.append("}\n");
 				} finally {
 					Tools.safeClose(writer);
@@ -312,11 +399,11 @@ public class ApplicationProcessor extends AbstractProcessor {
 						writer.append("new ").append(CTRL_METHOD).append("(");
 						writer.append(PHASE).append(".").append(method.phase.name());
 						writer.append(",");
-						writer.append(type).append(".class");
+						writer.append(entry.getKey()).append(".class");
 						writer.append(',');
-						writer.append(TOOLS).append(".safeGetMethod(").append(type).append(".class,\"").append(method.getName()).append("\"");
-						for(TypeMirror foo : method.type.getParameterTypes()) {
-							TypeMirror earsed = processingEnv.getTypeUtils().erasure(foo);
+						writer.append(TOOLS).append(".safeGetMethod(").append(entry.getKey()).append(".class,\"").append(method.getName()).append("\"");
+						for(TypeMirror foobar : method.type.getParameterTypes()) {
+							TypeMirror earsed = processingEnv.getTypeUtils().erasure(foobar);
 							 writer.append(",").append(earsed.toString()).append(".class");
 						}
 						writer.append(")");
@@ -339,43 +426,12 @@ public class ApplicationProcessor extends AbstractProcessor {
 						writer.append(")");
 						writer.append(");\n");
 						
-						//URL builder
-						writer.append("public static ").append(URLBuilder.class.getSimpleName()).append(" ").append(method.getName()).append("URL(");
-						List<? extends VariableElement> argDecls = method.element.getParameters();
-						List<? extends TypeMirror> argTypes = method.type.getParameterTypes();
-						for(int i = 0; i < argDecls.size(); i++) {
-							if(i > 0) writer.append(',');
-							TypeMirror argumentType = argTypes.get(i);
-							VariableElement argumentElement = argDecls.get(i);
-							writer.append(argumentType.toString()).append(" ").append(argumentElement.getSimpleName().toString());
-						}
-						
-						writer.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(method_");
-						writer.append(Integer.toString(index));
-						switch(argDecls.size()) {
-							case 0: break;
-							case 1:
-								writer.append(", (Object) ").append(argDecls.get(0).getSimpleName());
-								break;
-							default:
-								writer.append(", new Object[] {");
-								for(int i = 0; i < argDecls.size(); i++) {
-									if(i > 0) writer.append(", ");
-									writer.append("(Object)").append(argDecls.get(i).getSimpleName());
-								}
-								writer.append("}");
-								break;
-						}
-						writer.append("); }\n");
-						
 						//Maybe remove that
 						writer.append("public static final ").append(PHASE_LITERAL).append(" ").append(method.getName()).append(" = ");
 						writer.append("new ").append(PHASE_LITERAL).append("(method_").append(Integer.toString(index)).append(");\n");
 						
 						index++;
 					}
-					
-					//
 					writer.append("}\n");
 				} finally {
 					Tools.safeClose(writer);

@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample;
+package org.sample.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.PhaseLiteral;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
+import org.sample.*;
 
 
 /**
@@ -40,7 +41,7 @@ import org.juzu.text.Printer;
 public class Sample {
 
 	static {
-		ApplicationDescriptor desc = SampleApplication.DESCRIPTOR;
+		ApplicationDescriptor desc = org.sample.SampleApplication.DESCRIPTOR;
 	}
 	
 	@Inject @Resource("MyTemplate.gtmpl")
@@ -61,9 +62,9 @@ public class Sample {
 		
 		//Render template
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("action", "" + Sample_.actionURL());
-		data.put("render", "" + Sample_.renderURL());
-		data.put("foo", "" + Sample_.fooURL("bar"));
+		data.put("action", "" + SampleApplication.actionURL());
+		data.put("render", "" + SampleApplication.renderURL());
+		data.put("foo", "" + SampleApplication.fooURL("bar"));
 		template.render(printer, data);
 	}
 	
@@ -71,9 +72,9 @@ public class Sample {
 	public void foo(String name) throws IOException {
 		System.out.println("foo");
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("action", "" + Sample_.actionURL());
-		data.put("render", "" + Sample_.renderURL());
-		data.put("foo", "" + Sample_.fooURL("bar"));
+		data.put("action", "" + SampleApplication.actionURL());
+		data.put("render", "" + SampleApplication.renderURL());
+		data.put("foo", "" + SampleApplication.fooURL("bar"));
 		template.render(printer, data);
 	}
 }
