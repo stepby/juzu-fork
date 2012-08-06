@@ -33,7 +33,7 @@ import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.SectionType;
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 import org.juzu.utils.Location;
 
 /**
@@ -180,7 +180,7 @@ public class GroovyTemplateGenerator extends TemplateGenerator {
 		try {
 			writer.write(script);
 		} finally {
-			Safe.close(writer	);
+			Tools.safeClose(writer	);
 		}
 		
 		//create the class associated with the template
@@ -196,7 +196,7 @@ public class GroovyTemplateGenerator extends TemplateGenerator {
 			writer.append("}\n");
 			writer.append("}\n");
 		} finally {
-			Safe.close(writer);
+			Tools.safeClose(writer);
 		}
 	}
 }

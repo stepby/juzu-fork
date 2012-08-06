@@ -27,7 +27,7 @@ import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.Phase;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -46,7 +46,7 @@ public class ControllerResolver {
 	}
 	
 	public ControllerResolver(ControllerMethod ... methods) {
-		this.methods = Safe.unmodifiableList(methods);
+		this.methods = Tools.safeUnmodifiableList(methods);
 	}
 	
 	private static class Match {

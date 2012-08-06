@@ -55,7 +55,7 @@ import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
 import org.juzu.impl.request.RenderContext;
 import org.juzu.impl.utils.PackageMap;
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -73,6 +73,8 @@ public class ApplicationProcessor extends AbstractProcessor {
 	private final static String PHASE = Phase.class.getSimpleName();
 	
 	private final static String CTRL_PARAM = ControllerParameter.class.getSimpleName();
+	
+	private final static String TOOLS = Tools.class.getSimpleName();
 	
 	static class ApplicationMetaData {
 		private final PackageElement packageElt;
@@ -256,7 +258,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 					writer.append("));\n");
 					writer.append("}\n");
 				} finally {
-					Safe.close(writer);
+					Tools.safeClose(writer);
 				}
 			} catch(IOException e) {
 				throw new UnsupportedOperationException("handle me gracefully", e);
@@ -274,7 +276,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 				try {
 					writer.append(manifest);
 				} finally {
-					Safe.close(writer);
+					Tools.safeClose(writer);
 				}
 			} catch(IOException e) {
 				throw new UnsupportedOperationException("handle me gracefully", e);
@@ -293,7 +295,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 					writer.append("import ").append(PhaseLiteral.class.getName()).append(";\n");
 					writer.append("import ").append(ControllerMethod.class.getName()).append(";\n");
 					writer.append("import ").append(ControllerParameter.class.getName()).append(";\n");
-					writer.append("import ").append(Safe.class.getName()).append(";\n");
+					writer.append("import ").append(Tools.class.getName()).append(";\n");
 					writer.append("import ").append(Arrays.class.getName()).append(";\n");
 					writer.append("import ").append(Phase.class.getName()).append(";\n");
 					writer.append("import ").append(URLBuilder.class.getName()).append(";\n");
@@ -305,14 +307,14 @@ public class ApplicationProcessor extends AbstractProcessor {
 					int index = 0;
 					for(MethodMetaData method : entry.getValue().methods) {
 						//Method
-						writer.append("private static final ").append(ControllerMethod.class.getSimpleName()).append(" method_")
+						writer.append("private static final ").append(CTRL_METHOD).append(" method_")
 						.append(String.valueOf(index)).append(" = ");
 						writer.append("new ").append(CTRL_METHOD).append("(");
 						writer.append(PHASE).append(".").append(method.phase.name());
 						writer.append(",");
 						writer.append(type).append(".class");
 						writer.append(',');
-						writer.append("Safe.getMethod(").append(type).append(".class,\"").append(method.getName()).append("\"");
+						writer.append(TOOLS).append(".safeGetMethod(").append(type).append(".class,\"").append(method.getName()).append("\"");
 						for(TypeMirror foo : method.type.getParameterTypes()) {
 							TypeMirror earsed = processingEnv.getTypeUtils().erasure(foo);
 							 writer.append(",").append(earsed.toString()).append(".class");
@@ -376,7 +378,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 					//
 					writer.append("}\n");
 				} finally {
-					Safe.close(writer);
+					Tools.safeClose(writer);
 				}
 			} catch(IOException e) {
 				throw new UnsupportedOperationException("handle me gracefully", e);

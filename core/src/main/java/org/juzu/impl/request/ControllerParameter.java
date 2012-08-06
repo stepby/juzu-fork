@@ -17,7 +17,7 @@
  */
 package org.juzu.impl.request;
 
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -55,7 +55,7 @@ public class ControllerParameter {
 		if(obj == this) return true;
 		else if(obj instanceof ControllerParameter) {
 			ControllerParameter that = (ControllerParameter) obj;
-			return name.equals(that.name) && Safe.equals(value, that.value);
+			return name.equals(that.name) && Tools.safeEquals(value, that.value);
 		} else return false;
 	}
 	

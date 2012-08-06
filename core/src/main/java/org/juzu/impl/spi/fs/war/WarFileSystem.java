@@ -36,7 +36,7 @@ import javax.servlet.ServletContext;
 
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.utils.Content;
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -135,7 +135,7 @@ public abstract class WarFileSystem extends ReadFileSystem<String> {
 				}
 				return new Content.ByteArray(lastModified, baos.toByteArray());
 			} finally {
-				Safe.close(is);
+				Tools.safeClose(is);
 			}
 		}
 		return null;

@@ -28,7 +28,7 @@ import java.util.Iterator;
 
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.utils.Content;
-import org.juzu.impl.utils.Safe;
+import org.juzu.impl.utils.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -120,7 +120,7 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 			}
 			return new Content.ByteArray(file.lastModified(), content.toByteArray());
 		} finally {
-			Safe.close(in);
+			Tools.safeClose(in);
 		}
 	}
 

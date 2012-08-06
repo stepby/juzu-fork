@@ -23,15 +23,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import junit.framework.TestCase;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.file.JarArchiveBrowser;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -89,10 +88,10 @@ public class DevClassLoaderTestCase extends TestCase {
 		assertNotSame(libClass, Lib.class);
 		InputStream classesResource = cl.getResourceAsStream("classes_resource");
 		assertNotNull(classesResource);
-		assertEquals("classes_resource_value", IO.read(classesResource));
+		assertEquals("classes_resource_value", Tools.read(classesResource));
 		InputStream libResource = cl.getResourceAsStream("lib_resource");
 		assertNotNull(libResource);
-		assertEquals("lib_resource_value", IO.read(libResource));
+		assertEquals("lib_resource_value", Tools.read(libResource));
 		
 		DevClassLoader devCL = new DevClassLoader(cl);
 		try {
@@ -105,6 +104,6 @@ public class DevClassLoaderTestCase extends TestCase {
 		assertNull(classesResource);
 		libResource = devCL.getResourceAsStream("lib_resource");
 		assertNotNull(libResource);
-		assertEquals("lib_resource_value", IO.read(libResource));
+		assertEquals("lib_resource_value", Tools.read(libResource));
 	}
 }

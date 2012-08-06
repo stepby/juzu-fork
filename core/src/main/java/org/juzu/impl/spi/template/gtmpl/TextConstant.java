@@ -17,6 +17,7 @@
  */
 package org.juzu.impl.spi.template.gtmpl;
 
+import org.juzu.impl.utils.Tools;
 import org.juzu.text.CharArray;
 
 /**
