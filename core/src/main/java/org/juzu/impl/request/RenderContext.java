@@ -35,8 +35,8 @@ public class RenderContext extends RequestContext {
 	
 	private URLBuilderContext urlBuilderContext;
 
-	public RenderContext(Map<String, String[]> parameters, Printer printer, URLBuilderContext urlBuilderContext) {
-		super(parameters);
+	public RenderContext(ClassLoader classLoader, Map<String, String[]> parameters, Printer printer, URLBuilderContext urlBuilderContext) {
+		super(classLoader, parameters);
 		
 		//
 		this.printer = printer;

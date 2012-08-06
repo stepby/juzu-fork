@@ -18,10 +18,13 @@
 package org.juzu.impl.utils;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -69,11 +72,14 @@ public class DevClassLoaderTestCase extends TestCase {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, "exploded.war").addClass(Dev.class).addDirectories("WEB-INF/lib");
 		File explodedDir = archive.as(ExplodedExporter.class).exportExploded(targetDir);
 		File libJar = new File(explodedDir, "WEB-INF/lib/lib.jar");
-		ShrinkWrap.create(JavaArchive.class).addClass(Lib.class).as(ZipExporter.class).exportZip(libJar);
+		ShrinkWrap.create(JavaArchive.class).addClass(Lib.class).addResource(new StringAsset("lib_resource_value"), "lib_resource").as(ZipExporter.class).exportZip(libJar);
 		
 		//
 		File classesDir = new File(explodedDir, "WEB-INF/classes");
 		assertTrue(classesDir.isDirectory());
+		FileWriter classesResourceWriter = new FileWriter(new File(classesDir, "classes_resource"));
+		classesResourceWriter.write("classes_resource_value");
+		classesResourceWriter.close();
 		
 		//Build a correct parent CL
 		URLClassLoader cl = new URLClassLoader(new URL[] { classesDir.toURI().toURL(), libJar.toURI().toURL() }, getParentClassLoader());
@@ -81,6 +87,12 @@ public class DevClassLoaderTestCase extends TestCase {
 		assertNotSame(devClass, Dev.class);
 		Class<?> libClass = cl.loadClass(Lib.class.getName());
 		assertNotSame(libClass, Lib.class);
+		InputStream classesResource = cl.getResourceAsStream("classes_resource");
+		assertNotNull(classesResource);
+		assertEquals("classes_resource_value", IO.read(classesResource));
+		InputStream libResource = cl.getResourceAsStream("lib_resource");
+		assertNotNull(libResource);
+		assertEquals("lib_resource_value", IO.read(libResource));
 		
 		DevClassLoader devCL = new DevClassLoader(cl);
 		try {
@@ -89,5 +101,10 @@ public class DevClassLoaderTestCase extends TestCase {
 		} catch(ClassNotFoundException e) {
 		}
 		assertSame(libClass, devCL.loadClass(Lib.class.getName()));
+		classesResource = devCL.getResourceAsStream("classes_resource");
+		assertNull(classesResource);
+		libResource = devCL.getResourceAsStream("lib_resource");
+		assertNotNull(libResource);
+		assertEquals("lib_resource_value", IO.read(libResource));
 	}
 }

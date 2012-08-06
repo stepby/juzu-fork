@@ -15,35 +15,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu.impl.utils;
 
-import java.util.Map;
-
-import org.juzu.application.Phase;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext {
+public class IO {
+	
+	public static String read(InputStream in) throws IOException {
+		return read(in, "UTF-8");
+	}
 
-	protected final ClassLoader classLoader;
-	
-	protected final Map<String, String[]>  parameters;
-	
-	public RequestContext(ClassLoader classLoader, Map<String, String[]> parameters) {
-		this.classLoader = classLoader;
-		this.parameters = parameters;
+	public static String read(InputStream in, String charsetName) throws IOException {
+		byte[] buffer = new byte[256];
+		BufferedInputStream bis = new BufferedInputStream(in);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		for(int l = bis.read(buffer); l != -1; l = bis.read(buffer)) {
+			baos.write(buffer, 0, l);
+		}
+		return baos.toString(charsetName);
 	}
-	
-	public final Map<String, String[]> getParameters() {
-		return parameters;
-	}
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
 }

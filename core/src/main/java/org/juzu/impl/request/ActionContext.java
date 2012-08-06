@@ -28,8 +28,8 @@ import org.juzu.application.Phase;
  */
 public class ActionContext extends RequestContext {
 
-	public ActionContext(Map<String, String[]> parameters) {
-		super(parameters);
+	public ActionContext(ClassLoader classLoader, Map<String, String[]> parameters) {
+		super(classLoader, parameters);
 	}
 
 	@Override

@@ -38,29 +38,43 @@ public class DevClassLoader extends ClassLoader {
 		if(found.getClassLoader() == super.getParent()) {
 			String classPath = name.replace('.', '/') + ".class";
 			URL url = getResource(classPath);
-			
-			//Unwrap until we get the file location
-			String protocal = url.getProtocol();
-			if("file".equals(protocal)) {
-				String path = url.getPath();
-				if(path.endsWith("/WEB-INF/classes/" + classPath)) {
-					throw new ClassNotFoundException();
-				}
-			} else if("jar".equals(protocal)) {
-				String path = url.getPath();
-				int index = path.indexOf("!/");
-				String nested = path.substring(0, index);
-				if(nested.endsWith(".jar")) {
-					
-				} else {
-					throw new UnsupportedOperationException("handle me gracefully " + url);
-				}
-			} else {
-				throw new UnsupportedOperationException("handle me gracefully " + url);
-			}
+			if(url == null) throw new ClassNotFoundException();
 		}
 		
 		//
 		return found;
+	}
+	
+	@Override
+	public URL getResource(String name) {
+		URL url = super.getResource(name);
+		if(url != null && shouldLoad(url, name)) {
+			return url;
+		} 
+		return null;
+	}
+	
+	private boolean shouldLoad(URL url, String name) {
+		//Unwrap until we get the file location
+		String protocal = url.getProtocol();
+		if("file".equals(protocal)) {
+			String path = url.getPath();
+			if(path.endsWith("/WEB-INF/classes/" + name)) {
+				return false;
+			} else {
+				return true;
+			}
+		} else if("jar".equals(protocal)) {
+			String path = url.getPath();
+			int index = path.indexOf("!/");
+			String nested = path.substring(0, index);
+			if(nested.endsWith(".jar")) {
+				return true;
+			} else {
+				throw new UnsupportedOperationException("handle me gracefully " + url);
+			}
+		} else {
+			throw new UnsupportedOperationException("handle me gracefully " + url);
+		}
 	}
 }

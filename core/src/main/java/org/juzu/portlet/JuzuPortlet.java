@@ -78,6 +78,8 @@ public class JuzuPortlet implements Portlet {
 	private PortletConfig config;
 	
 	private 	FileSystemScanner<String> devScanner;
+	
+	private ClassLoader classLoader;
 
 	public void init(PortletConfig config) throws PortletException {
 			String runMode = config.getInitParameter("juzu.run_mode");
@@ -165,7 +167,10 @@ public class JuzuPortlet implements Portlet {
 		InputStream in = url.openStream();
 		Properties props = new Properties();
 		props.load(in);
+		
 		if(props.size() != 1) throw new Exception("Could not find an application to start " + props);
+		
+		//
 		Map.Entry<Object, Object> entry = props.entrySet().iterator().next();
 		String fqn = entry.getValue().toString();
 		System.out.println("loading class descriptor " + fqn);
@@ -184,10 +189,11 @@ public class JuzuPortlet implements Portlet {
 		Bootstrap bootstrap = new Bootstrap(container, descriptor);
 		bootstrap.start();
 		applicationContext = bootstrap.getContext();
+		this.classLoader = classLoader;
 	}
 
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
-		ActionContext actionContext = new ActionContext(request.getParameterMap());
+		ActionContext actionContext = new ActionContext(classLoader, request.getParameterMap());
 		
 		//
 		applicationContext.invoke(actionContext);
@@ -200,7 +206,7 @@ public class JuzuPortlet implements Portlet {
 		if(errors.isEmpty()) {
 			Printer printer = new WriterPrinter(response.getWriter());
 			
-			RenderContext renderContext = new RenderContext(request.getParameterMap(), printer, new PortletURLBuilderContext(response));
+			RenderContext renderContext = new RenderContext(classLoader, request.getParameterMap(), printer, new PortletURLBuilderContext(response));
 			applicationContext.invoke(renderContext);
 		} else {
 //			Element elt	 = response.createElement("link");
