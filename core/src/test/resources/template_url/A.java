@@ -15,60 +15,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample.controller;
+package template_url;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-
-import org.juzu.Action;
 import org.juzu.Render;
 import org.juzu.Resource;
-import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.PhaseLiteral;
 import org.juzu.template.Template;
-import org.juzu.text.Printer;
-import org.sample.*;
-
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class Sample {
+public class A {
 
-	static {
-		ApplicationDescriptor desc = org.sample.SampleApplication.DESCRIPTOR;
-	}
-	
-	@Inject @Resource("MyTemplate.gtmpl")
+	@Resource("index.gtmpl")
 	private Template template;
 	
-	@Inject
-	Printer printer;
-	
-	@Action
-	public PhaseLiteral action() {
-		return Sample_.render;
-	}
-	
 	@Render
-	public void render() throws IOException {
-		//A generated template literal for MyTemplate
-		org.sample.templates.MyTemplate literal;
+	public void foo() {
 		
-		//Render template
-		Map<String, Object> data = new HashMap<String, Object>();
-		template.render(printer, data);
 	}
 	
 	@Render
-	public void foo(String name) throws IOException {
-		System.out.println("foo : " + name);
-		Map<String, Object> data = new HashMap<String, Object>();
-		template.render(printer, data);
+	public void bar(String s) {
+		
 	}
 }

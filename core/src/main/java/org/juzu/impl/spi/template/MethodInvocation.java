@@ -15,19 +15,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.application.simple;
+package org.juzu.impl.spi.template;
 
-import org.juzu.Render;
+import java.util.List;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class A {
+public class MethodInvocation {
 
-	@Render
-	public void render() {
-		
+	private final String className;
+	
+	private final String methodName;
+	
+	private final List<String> methodArguments;
+	
+	public MethodInvocation(String className, String methodName, List<String> methodArguments) {
+		this.className = className;
+		this.methodName = methodName;
+		this.methodArguments = methodArguments;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public String getMethodName() {
+		return methodName;
+	}
+
+	public List<String> getMethodArguments() {
+		return methodArguments;
 	}
 }

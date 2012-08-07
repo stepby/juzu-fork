@@ -24,8 +24,10 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 
+import junit.framework.TestCase;
+
 import org.juzu.application.PhaseLiteral;
-import org.juzu.impl.application.ApplicationProcessor;
+import org.juzu.impl.apt.JuzuProcessor;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
@@ -33,8 +35,6 @@ import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -60,7 +60,7 @@ public class SimpleApplicationTestCase extends TestCase {
 		//
 		RAMFileSystem out = new RAMFileSystem();
 		Compiler<RAMPath, RAMPath> compiler = new Compiler<RAMPath, RAMPath>(in, out);
-		compiler.addAnnotationProcessor(new ApplicationProcessor());
+		compiler.addAnnotationProcessor(new JuzuProcessor());
 		assertEquals(Collections.emptyList(), compiler.compile());
 		
 		//

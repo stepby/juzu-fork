@@ -55,4 +55,8 @@ public abstract class AbstractTestCase extends TestCase {
 		error.initCause(t);
 		return error;
 	}
+	
+	public static AssertionFailedError failure(String msg) {
+		throw new AssertionFailedError(msg);
+	}
 }

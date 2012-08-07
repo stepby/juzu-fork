@@ -15,21 +15,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.spi.template.gtmpl;
+package org.juzu.impl.apt;
 
-import org.juzu.impl.spi.template.TemplateGenerator;
-import org.juzu.impl.spi.template.TemplateGeneratorContext;
-import org.juzu.impl.spi.template.TemplateProvider;
+import javax.annotation.processing.SupportedAnnotationTypes;
+
+import org.juzu.impl.application.ApplicationProcessor;
+import org.juzu.impl.template.TemplateProcessor;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class GroovyTemplateProvider extends TemplateProvider {
+@SupportedAnnotationTypes({"*"})
+public class JuzuProcessor extends Processor {
 
-	@Override
-	public TemplateGenerator newGenerator(TemplateGeneratorContext context) {
-		return new GroovyTemplateGenerator(context);
+	public JuzuProcessor() {
+		super(new ApplicationProcessor(), new TemplateProcessor());
 	}
 }

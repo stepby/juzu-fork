@@ -17,12 +17,14 @@
  */
 package org.juzu.impl.template;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.SectionType;
+import org.juzu.impl.utils.Builder;
 import org.juzu.utils.Location;
 
 import junit.framework.TestCase;
@@ -103,12 +105,18 @@ public class TemplateParserTestCase extends TestCase {
 		);
 	}
 	
+	public void testParseURL() throws IOException {
+		assertEquals(Arrays.<ASTNode.Block>asList(new ASTNode.URL("a", Collections.<String, String>emptyMap())), parser.parse("@{a()}").getSections());
+		assertEquals(Arrays.<ASTNode.Block>asList(new ASTNode.URL("a", Collections.singletonMap("a", "b"))), parser.parse("@{a(a=b)}").getSections());
+		assertEquals(Arrays.<ASTNode.Block>asList(new ASTNode.URL("a", Builder.map("a", "b").put("c", "d").build())), parser.parse("@{a(a=b,c=d)}").getSections());
+	}
+	
 	public void testPosition() {
-		List<ASTNode.Section> list = parser.parse("a\nb<%= foo %>c").getSections();
-		assertEquals(new Location(1,1), list.get(0).getItems().get(0).getBeginPosition());
-		assertEquals(new Location(2,1), list.get(0).getItems().get(1).getBeginPosition());
-		assertEquals(new Location(1,2), list.get(0).getItems().get(2).getBeginPosition());
-		assertEquals(new Location(2,2), list.get(1).getItems().get(0).getBeginPosition());
-		assertEquals(new Location(11,2), list.get(2).getItems().get(0).getBeginPosition());
+		List<ASTNode.Block> sections = parser.parse("a\nb<%= foo %>c").getSections();
+		assertEquals(new Location(1,1), ((ASTNode.Section)sections.get(0)).getItems().get(0).getBeginPosition());
+		assertEquals(new Location(2,1), ((ASTNode.Section)sections.get(0)).getItems().get(1).getBeginPosition());
+		assertEquals(new Location(1,2), ((ASTNode.Section)sections.get(0)).getItems().get(2).getBeginPosition());
+		assertEquals(new Location(2,2), ((ASTNode.Section)sections.get(1)).getItems().get(0).getBeginPosition());
+		assertEquals(new Location(11,2), ((ASTNode.Section)sections.get(2)).getItems().get(0).getBeginPosition());
 	}
 }

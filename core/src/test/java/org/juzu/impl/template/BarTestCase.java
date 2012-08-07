@@ -15,21 +15,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.spi.template.gtmpl;
+package org.juzu.impl.template;
 
-import org.juzu.impl.spi.template.TemplateGenerator;
-import org.juzu.impl.spi.template.TemplateGeneratorContext;
-import org.juzu.impl.spi.template.TemplateProvider;
+import java.io.File;
+
+import org.juzu.impl.spi.fs.disk.DiskFileSystem;
+import org.juzu.test.CompilerHelper;
+
+import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class GroovyTemplateProvider extends TemplateProvider {
+public class BarTestCase extends TestCase {
 
-	@Override
-	public TemplateGenerator newGenerator(TemplateGeneratorContext context) {
-		return new GroovyTemplateGenerator(context);
+	public void testNoArg() throws Exception {
+		final File root = new File(System.getProperty("test.resources"));
+		DiskFileSystem fs = new DiskFileSystem(root, "template_url");
+		CompilerHelper<File> compiler = new CompilerHelper<File>(fs);
+		compiler.assertCompile();
 	}
 }

@@ -25,5 +25,5 @@ package org.juzu.impl.spi.template;
  * May 21, 2012
  */
 public abstract class TemplateProvider {
-	public abstract TemplateGenerator newGenerator();
+	public abstract TemplateGenerator newGenerator(TemplateGeneratorContext context);
 }

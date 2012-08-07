@@ -30,8 +30,6 @@ import java.util.Map;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.juzu.impl.spi.template.TemplateStub;
-import org.juzu.impl.template.ASTNode;
-import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.TemplateExecutionException;
 import org.juzu.text.Printer;
 
@@ -47,7 +45,7 @@ public abstract class GroovyTemplate extends TemplateStub {
 	
 	private Class<?> scriptClass;
 	
-	private HashMap<Integer, ASTNode.Text> locationTable;
+	private HashMap<Integer, Foo> locationTable;
 	
 	protected GroovyTemplate() {
 		this.templateId = getClass().getName();
@@ -69,7 +67,7 @@ public abstract class GroovyTemplate extends TemplateStub {
 			try {
 				scriptClass = loader.parseClass(gcs, false);
 				Class<?> constants = scriptClass.getClassLoader().loadClass("Constants");
-				locationTable = (HashMap<Integer, Text>)constants.getField("TABLE").get(null);
+				locationTable = (HashMap<Integer, Foo>)constants.getField("TABLE").get(null);
 			} catch(Exception e) {
 				e.printStackTrace();
 				throw new UnsupportedOperationException("handle me gracefully");
@@ -105,17 +103,23 @@ public abstract class GroovyTemplate extends TemplateStub {
 	
 	private TemplateExecutionException buildRuntimeException(Throwable t) {
 		StackTraceElement[] trace = t.getStackTrace();
-		ASTNode.Text firstItem = null;
+		Foo firstItem = null;
 		for(int i = 0; i < trace.length; i++) {
 			StackTraceElement element = trace[i];
 			if(element.getClassName().equals(scriptClass.getName())) {
 				int lineNumber = element.getLineNumber();
-				ASTNode.Text item = locationTable.get(lineNumber);
+				Foo item = locationTable.get(lineNumber);
+
 				int templateLineNumber;
 				if(item != null) {
-					templateLineNumber = item.getBeginPosition().getLine();
-					if(firstItem == null) firstItem = item;
-					else templateLineNumber = -1;
+					
+					templateLineNumber = item.getPosition().getLine();
+					
+					if(firstItem == null) {
+						firstItem = item;
+					} else {
+						templateLineNumber = -1;
+					}
 					
 					element = new StackTraceElement(
 						element.getClassName(),
@@ -129,7 +133,7 @@ public abstract class GroovyTemplate extends TemplateStub {
 		
 		t.setStackTrace(trace);
 		if(firstItem != null)
-			return new TemplateExecutionException(templateId, firstItem.getBeginPosition(), firstItem.getData(), t);
+			return new TemplateExecutionException(templateId, firstItem.getPosition(), firstItem.getValue(), t);
 		else
 			return new TemplateExecutionException(templateId, null, null, t);
 	}

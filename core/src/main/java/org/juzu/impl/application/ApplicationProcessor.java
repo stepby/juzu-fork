@@ -21,17 +21,16 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
@@ -51,6 +50,7 @@ import org.juzu.URLBuilder;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.Phase;
 import org.juzu.application.PhaseLiteral;
+import org.juzu.impl.apt.ProcessorPlugin;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
 import org.juzu.impl.request.RenderContext;
@@ -62,9 +62,7 @@ import org.juzu.impl.utils.Tools;
  * @version $Id$
  *
  */
-@javax.annotation.processing.SupportedAnnotationTypes({"org.juzu.Application"})
-@javax.annotation.processing.SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class ApplicationProcessor extends AbstractProcessor {
+public class ApplicationProcessor extends ProcessorPlugin {
 	
 	private final static String PHASE_LITERAL = PhaseLiteral.class.getSimpleName();
 	
@@ -76,10 +74,10 @@ public class ApplicationProcessor extends AbstractProcessor {
 	
 	private final static String TOOLS = Tools.class.getSimpleName();
 	
-	static class ApplicationMetaData {
+	public static class ApplicationMetaData {
 		private final PackageElement packageElt;
 		
-		private final String fqn;
+		private final String className;
 		
 		private final String prefix;
 		
@@ -93,15 +91,47 @@ public class ApplicationProcessor extends AbstractProcessor {
 			String packageName = packageElt.getQualifiedName().toString();
 			
 			this.packageElt = packageElt;
-			this.fqn = packageName + "." + applicationName;
+			this.className = packageName + "." + applicationName;
 			this.name = applicationName;
 			this.packageName = packageName;
 			this.prefix = packageName + ".";
 			this.controllers = new ArrayList<ControllerMetaData>();
 		}
+		
+		public MethodMetaData resolve(String name, Set<String> parameters) {
+			TreeSet<MethodMetaData> set = new TreeSet<MethodMetaData>(new Comparator<MethodMetaData>() {
+				public int compare(MethodMetaData o1, MethodMetaData o2) {
+					return ((Integer) o1.parameterNames.size()).compareTo((Integer) o2.parameterNames.size());
+				}
+			});
+			
+			for(ControllerMetaData controller : controllers) {
+				for(MethodMetaData method : controller.methods) {
+					if(method.getName().equals(name) && method.parameterNames.containsAll(parameters)) {
+						set.add(method);
+					}
+				}
+			}
+			
+			//
+			return set.iterator().next();
+		}
+
+		public String getClassName() {
+			return className;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getPackageName() {
+			return packageName;
+		}
+		
 	}
 	
-	static class ControllerMetaData {
+	public static class ControllerMetaData {
 
 		private final List<MethodMetaData> methods;
 		
@@ -113,7 +143,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 		}
 	}
 	
-	static class MethodMetaData {
+	public static class MethodMetaData {
 		
 		private final Phase phase;
 		
@@ -123,27 +153,48 @@ public class ApplicationProcessor extends AbstractProcessor {
 		
 		private final List<ControllerParameter> annotationParameters;
 		
+		private final LinkedHashSet<String> parameterNames;
+		
 		public MethodMetaData(Phase phase, ExecutableElement element, List<ControllerParameter> parameters) {
+			LinkedHashSet<String> parameterNames = new LinkedHashSet<String>();
+			for(VariableElement variableElt : element.getParameters()) {
+				parameterNames.add(variableElt.getSimpleName().toString());
+			}
+			
+			
 			this.phase = phase;
 			this.element = element;
 			this.type = (ExecutableType)element.asType();
 			this.annotationParameters = parameters;
+			this.parameterNames = parameterNames;
 		}
 		
-		public CharSequence getName() {
-			return element.getSimpleName();
+		public String getName() {
+			return element.getSimpleName().toString();
+		}
+		
+		public ExecutableType getType() {
+			return type;
+		}
+		
+		public ExecutableElement getElement() {
+			return element;
 		}
 	}
 	
 	private StringBuilder manifest = new StringBuilder();
+	
+	private PackageMap<ApplicationMetaData> applications = new PackageMap<ApplicationMetaData>();
+	
+	public ApplicationMetaData getApplication(PackageElement element) {
+		return applications.resolveValue(element.getQualifiedName().toString());
+	}
 
 	@Override
-	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		Filer filer = processingEnv.getFiler();
-		
+	public void process() {
 		//Discover all applications
-		PackageMap<ApplicationMetaData> applications = new PackageMap<ApplicationMetaData>();
-		for(Element elt : roundEnv.getElementsAnnotatedWith(Application.class)) {
+		List<ApplicationMetaData> found = new ArrayList<ApplicationMetaData>();
+		for(Element elt : getElementsAnnotatedWith(Application.class)) {
 			PackageElement packageElt = (PackageElement) elt;
 			String packageName = packageElt.getQualifiedName().toString();
 			
@@ -162,14 +213,18 @@ public class ApplicationProcessor extends AbstractProcessor {
 				} else {
 					name = Character.toUpperCase(name.charAt(0)) + name.substring(1) + "Application";
 				}
-				applications.putValue(packageName, new ApplicationMetaData(packageElt, name));
+				
+				//
+				ApplicationMetaData application = new ApplicationMetaData(packageElt, name);
+				applications.putValue(packageName, application);
+				found.add(application);
 			}
 		}
 		
 		//Collect @Render
 		Map<String, ControllerMetaData> controllerMap = new HashMap<String, ControllerMetaData>() ;
-		Set<? extends Element> actions = roundEnv.getElementsAnnotatedWith(Action.class);
-		Set<? extends Element> renders = roundEnv.getElementsAnnotatedWith(Render.class);
+		Set<? extends Element> actions = getElementsAnnotatedWith(Action.class);
+		Set<? extends Element> renders = getElementsAnnotatedWith(Render.class);
 		Set<? extends Element> intersection = new HashSet<Element>(actions);
 		intersection.retainAll(renders);
 		if(intersection.size() > 0) {
@@ -190,7 +245,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 					controllerMap.put(typeName, a = new ControllerMetaData(typeElt));
 
 					//Find the matching application
-					PackageElement pkg = processingEnv.getElementUtils().getPackageOf(typeElt);
+					PackageElement pkg = getPackageOf(typeElt);
 					String fqn = pkg.getQualifiedName().toString();
 
 					//
@@ -223,10 +278,10 @@ public class ApplicationProcessor extends AbstractProcessor {
 		}
 		
 		//Generate applications
-		for(int i = 0; i < applications.getSize(); i++) 	{
-			ApplicationMetaData foo = applications.getValue(i);
+		for(int i = 0; i < found.size(); i++) 	{
+			ApplicationMetaData foo = found.get(i);
 			try {
-				JavaFileObject jfo = filer.createSourceFile(foo.fqn, foo.packageElt);
+				JavaFileObject jfo = createSourceFile(foo.className, foo.packageElt);
 				Writer writer = jfo.openWriter();
 				try {
 					String templatesPackageName = foo.packageName;
@@ -285,7 +340,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 							writer.append(',');
 							writer.append(TOOLS).append(".safeGetMethod(").append(controllerFQN).append(".class,\"").append(method.getName()).append("\"");
 							for(TypeMirror foobar : method.type.getParameterTypes()) {
-								TypeMirror earsed = processingEnv.getTypeUtils().erasure(foobar);
+								TypeMirror earsed = erasure(foobar);
 								 writer.append(",").append(earsed.toString()).append(".class");
 							}
 							writer.append(")");
@@ -351,33 +406,17 @@ public class ApplicationProcessor extends AbstractProcessor {
 				throw new UnsupportedOperationException("handle me gracefully", e);
 			}
 			
-			//
-			manifest.append(foo.name).append('=').append(foo.fqn).append("\n");
-		}
-		
-		//
-		if(roundEnv.processingOver()) {
-			try {
-				FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, "org.juzu", "config.properties");
-				Writer writer = fo.openWriter();
-				try {
-					writer.append(manifest);
-				} finally {
-					Tools.safeClose(writer);
-				}
-			} catch(IOException e) {
-				throw new UnsupportedOperationException("handle me gracefully", e);
-			}
+			manifest.append(foo.name).append('=').append(foo.className).append("\n");
 		}
 		
 		//Generate the action literals
 		for(Map.Entry<String, ControllerMetaData> entry : controllerMap.entrySet()) {
 			try {
 				String type = entry.getKey();
-				JavaFileObject jfo = filer.createSourceFile(type + "_");
+				JavaFileObject jfo = createSourceFile(type + "_");
 				Writer writer = jfo.openWriter();
 				try {
-					PackageElement pkg = processingEnv.getElementUtils().getPackageOf(entry.getValue().typeElt);
+					PackageElement pkg = getPackageOf(entry.getValue().typeElt);
 					writer.append("package ").append(pkg.getQualifiedName()).append(";\n");
 					writer.append("import ").append(PhaseLiteral.class.getName()).append(";\n");
 					writer.append("import ").append(ControllerMethod.class.getName()).append(";\n");
@@ -403,7 +442,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 						writer.append(',');
 						writer.append(TOOLS).append(".safeGetMethod(").append(entry.getKey()).append(".class,\"").append(method.getName()).append("\"");
 						for(TypeMirror foobar : method.type.getParameterTypes()) {
-							TypeMirror earsed = processingEnv.getTypeUtils().erasure(foobar);
+							TypeMirror earsed = erasure(foobar);
 							 writer.append(",").append(earsed.toString()).append(".class");
 						}
 						writer.append(")");
@@ -440,8 +479,20 @@ public class ApplicationProcessor extends AbstractProcessor {
 				throw new UnsupportedOperationException("handle me gracefully", e);
 			}
 		}
-		
-		//
-		return true;
+	}
+	
+	@Override
+	public void over() {
+		try {
+			FileObject fo = createResource(StandardLocation.CLASS_OUTPUT, "org.juzu", "config.properties");
+			Writer writer = fo.openWriter();
+			try {
+				writer.append(manifest);
+			} finally {
+				Tools.safeClose(writer);
+			}
+		} catch(IOException e) {
+			throw new UnsupportedOperationException("handle me gracefully", e);
+		}
 	}
 }

@@ -20,6 +20,7 @@ package org.juzu.impl.template;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.utils.Location;
@@ -45,25 +46,33 @@ public abstract class ASTNode {
 	
 	public static class Template extends ASTNode {
 
-		private final List<Section> sections;
+		private final List<Block> sections;
 		
-		Template(List<Section> sections) {
+		Template(List<Block> sections) {
 			super(new Location(0, 0));
 			this.sections = sections;
 		}
 		
-		public List<Section> getSections() {
+		public List<Block> getSections() {
 			return sections;
 		}
 		
 		public void generate(TemplateGenerator generator) {
 			GeneratorContext ctx = new GeneratorContext(generator);
-			for(ASTNode.Section section : sections) {
-				ctx.begin(section.getType());
-				for(ASTNode item : section.getItems()) {
-					ctx.append(item);
+			for(ASTNode.Block block : sections) {
+				if(block instanceof Section) {
+					Section section = (Section) block;
+					ctx.begin(section.getType(), section.getItems().get(0).getBeginPosition());
+					for(ASTNode item : section.items) {
+						ctx.append(item);
+					}
+					ctx.end();
+				} else if(block instanceof URL) {
+					URL url = (URL) block;
+					ctx.writer.url(url.name, url.args);
+				} else {
+					throw new AssertionError();
 				}
-				ctx.end();
 			}
 		}
 		
@@ -79,7 +88,7 @@ public abstract class ASTNode {
 				this.writer = writer;
 			}
 			
-			void begin(SectionType sectionType) {
+			void begin(SectionType sectionType, Location pos) {
 				if(sectionType == null) throw new NullPointerException();
 				if(currentType != null) throw new IllegalStateException();
 				this.currentType = sectionType;
@@ -87,10 +96,10 @@ public abstract class ASTNode {
 					case STRING :
 						break;
 					case SCRIPTLET:
-						writer.startScriptlet();
+						writer.startScriptlet(pos);
 						break;
 					case EXPR:
-						writer.startExpression();
+						writer.startExpression(pos);
 						break;
 				}
 			}
@@ -104,10 +113,10 @@ public abstract class ASTNode {
 							accumulateText.append(text);
 							break;
 						case SCRIPTLET :
-							writer.appendScriptlet(textItem);
+							writer.appendScriptlet(textItem.getData());
 							break;
 						case EXPR :
-							writer.appendExpression(textItem);
+							writer.appendExpression(textItem.getData());
 							break;
 					}
 				} else if(item instanceof ASTNode.LineBreak) {
@@ -116,10 +125,10 @@ public abstract class ASTNode {
 							accumulateText.append('\n');
 							break;
 						case SCRIPTLET :
-							writer.appendLineBreak(currentType);
+							writer.appendLineBreak(currentType, item.getBeginPosition());
 							break;
 						case EXPR :
-							writer.appendLineBreak(currentType);
+							writer.appendLineBreak(currentType, item.getBeginPosition());
 							break;
 					}
 				} else  throw new AssertionError();
@@ -176,24 +185,87 @@ public abstract class ASTNode {
 		}
 	}
 	
-	public static class Section extends ASTNode {
-		
-		private final SectionType type;
-		
-		private final List<ASTNode> items;
+	public abstract static class Block extends ASTNode {
 		
 		private final int beginOffset;
 		
 		private final int endOffset;
 		
-		private final Location endPosition;
+		private Location endPosition;
+
+		public Block(int beginOffset, int endOffset, Location beginPosition, Location endPosition) {
+			super(beginPosition);
+			this.beginOffset = beginOffset;
+			this.endOffset = endOffset;
+			this.endPosition = endPosition;
+		}
+
+		public Location getEndPosition() {
+			return endPosition;
+		}
+
+		public void setEndPosition(Location endPosition) {
+			this.endPosition = endPosition;
+		}
+
+		public int getBeginOffset() {
+			return beginOffset;
+		}
+
+		public int getEndOffset() {
+			return endOffset;
+		}
+	}
+	
+	public static class URL extends Block {
+		
+		private final String name;
+		
+		private final Map<String, String> args;
+		
+		public URL(String name, Map<String, String> args) {
+			this(name, args, 0, 0, new Location(1, 1), new Location(1, 1));
+		}
+
+		public URL(String name, Map<String, String> args, int beginOffset, int endOffset, Location beginPosition, Location endPosition) {
+			super(beginOffset, endOffset, beginPosition, endPosition);
+			
+			//
+			this.name = name;
+			this.args = args;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Map<String, String> getArgs() {
+			return args;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) return true;
+			else if (obj instanceof URL) {
+				URL that = (URL) obj;
+				return name.equals(that.name) && args.equals(that.args);
+			} else return false;
+		}
+	}
+	
+	public static class Section extends Block {
+		
+		private final SectionType type;
+		
+		private final List<ASTNode> items;
+		
 		
 		Section(SectionType type, String text) {
-			this(type, 0, text.length(),text, new Location(1, 1), new Location(1,1));
+			this(type, 0, 0, text, new Location(1, 1), new Location(1,1));
 		}
 		
 		Section(SectionType type, int beginOffset, int endOffset, String text, Location beginPosition, Location endPosition) {
-			super(beginPosition);
+			super(beginOffset, endOffset, beginPosition, endPosition);
 			//
 			if(type == null) throw new NullPointerException();
 			if(text == null) throw new NullPointerException();
@@ -221,23 +293,8 @@ public abstract class ASTNode {
 			}
 			
 			//
-			this.beginOffset = beginOffset;
-			this.endOffset = endOffset;
 			this.type = type;
 			this.items = Collections.unmodifiableList(sections);
-			this.endPosition = endPosition;
-		}
-		
-		public int getBeginOffset() {
-			return beginOffset;
-		}
-		
-		public int getEndOffset() {
-			return endOffset;
-		}
-		
-		public Location getEndPosition() {
-			return endPosition;
 		}
 		
 		public SectionType getType() {

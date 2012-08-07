@@ -17,19 +17,29 @@
  */
 package org.juzu.impl.spi.template.gtmpl;
 
-import org.juzu.impl.spi.template.TemplateGenerator;
-import org.juzu.impl.spi.template.TemplateGeneratorContext;
-import org.juzu.impl.spi.template.TemplateProvider;
+import org.juzu.utils.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class GroovyTemplateProvider extends TemplateProvider {
+public class Foo {
 
-	@Override
-	public TemplateGenerator newGenerator(TemplateGeneratorContext context) {
-		return new GroovyTemplateGenerator(context);
+	private final Location position;
+	
+	private final String value;
+	
+	public Foo(Location position, String value) {
+		this.position = position;
+		this.value = value;
+	}
+
+	public Location getPosition() {
+		return position;
+	}
+
+	public String getValue() {
+		return value;
 	}
 }

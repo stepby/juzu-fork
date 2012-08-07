@@ -44,8 +44,8 @@ import javax.portlet.RenderResponse;
 
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.impl.application.ApplicationContext;
-import org.juzu.impl.application.ApplicationProcessor;
 import org.juzu.impl.application.Bootstrap;
+import org.juzu.impl.apt.JuzuProcessor;
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ActionContext;
@@ -59,7 +59,6 @@ import org.juzu.impl.spi.fs.jar.JarFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
 import org.juzu.impl.spi.fs.war.WarFileSystem;
-import org.juzu.impl.template.TemplateProcessor;
 import org.juzu.impl.utils.DevClassLoader;
 import org.juzu.text.Printer;
 import org.juzu.text.WriterPrinter;
@@ -134,8 +133,7 @@ public class JuzuPortlet implements Portlet {
 					RAMFileSystem classes = new RAMFileSystem();
 					
 					Compiler<String, RAMPath> compiler = new Compiler<String, RAMPath>(classPath, fs, classes);
-					compiler.addAnnotationProcessor(new TemplateProcessor());
-					compiler.addAnnotationProcessor(new ApplicationProcessor());
+					compiler.addAnnotationProcessor(new JuzuProcessor());
 					List<CompilationError> res = compiler.compile();
 					if(res.isEmpty()) {
 						ClassLoader cl1 = new DevClassLoader(Thread.currentThread().getContextClassLoader());

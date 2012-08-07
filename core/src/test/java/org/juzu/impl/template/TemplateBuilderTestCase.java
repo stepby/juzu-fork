@@ -37,7 +37,7 @@ public class TemplateBuilderTestCase extends TestCase {
 
 	public void testFoo() throws Exception {
 		ASTBuilder parser = new ASTBuilder();
-		GroovyTemplateGenerator templateBuilder = new GroovyTemplateGenerator();
+		GroovyTemplateGenerator templateBuilder = new GroovyTemplateGenerator(null);
 		parser.parse("a<%=foo%>c").generate(templateBuilder);
 		GroovyTemplate template = templateBuilder.build("template_" + Math.abs(new Random().nextLong()));
 		StringWriter out = new StringWriter();

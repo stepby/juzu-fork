@@ -18,11 +18,12 @@
 package org.juzu.impl.spi.template;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.annotation.processing.Filer;
 
-import org.juzu.impl.template.ASTNode;
 import org.juzu.impl.template.SectionType;
+import org.juzu.utils.Location;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -32,21 +33,23 @@ import org.juzu.impl.template.SectionType;
  */
 public abstract class TemplateGenerator {
 
-	public abstract void startScriptlet();
+	public abstract void startScriptlet(Location beginPosition);
 	
-	public abstract void appendScriptlet(ASTNode.Text scriptlet);
+	public abstract void appendScriptlet(String scriptlet);
 	
 	public abstract void endScriptlet();
 	
-	public abstract void startExpression();
+	public abstract void startExpression(Location beginPosition);
 	
-	public abstract void appendExpression(ASTNode.Text expr);
+	public abstract void appendExpression(String expr);
 	
 	public abstract void endExpression();
 	
 	public abstract void appendText(String text);
 	
-	public abstract void appendLineBreak(SectionType currentType);
+	public abstract void appendLineBreak(SectionType currentType, Location position);
+	
+	public abstract void url(String name, Map<String, String> args);
 	
 	public abstract void generate(Filer filer, String pkgName, String rawName) throws IOException;
 }

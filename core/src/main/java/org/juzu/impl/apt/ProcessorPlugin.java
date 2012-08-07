@@ -1,0 +1,88 @@
+/*
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.juzu.impl.apt;
+
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import javax.annotation.processing.Filer;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+
+/**
+ * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
+ * @version $Id$
+ *
+ */
+public class ProcessorPlugin {
+
+	Processor processor;
+	
+	public void init() {
+	}
+	
+	public void process() {
+	}
+	
+	public void over() {
+	}
+	
+	public void destroy() {
+	}
+	
+	protected final <P extends ProcessorPlugin> P getPlugin(Class<P> pluginType) {
+		for(ProcessorPlugin plugin : processor.plugins) {
+			if(pluginType.isInstance(plugin)) 
+				return pluginType.cast(plugin);
+		}
+		return null;
+	}
+	
+	protected final Set<? extends Element> getElementsAnnotatedWith(Class<? extends Annotation> a) {
+		return processor.roundEnv.getElementsAnnotatedWith(a);
+	}
+	
+	protected final PackageElement getPackageOf(Element elt) {
+		return processor.processingEnv.getElementUtils().getPackageOf(elt);
+	}
+	
+	protected final FileObject getResource(JavaFileManager.Location location, CharSequence pkg, CharSequence relativeName) throws IOException {
+		return getFiler().getResource(location, pkg, relativeName);
+	}
+	
+	protected final JavaFileObject createSourceFile(CharSequence name, Element ... originatingElements) throws IOException {
+		return getFiler().createSourceFile(name, originatingElements);
+	}
+	
+	protected final FileObject createResource(JavaFileManager.Location location, CharSequence pkg, CharSequence relativeName, Element ... originatingElements) throws IOException {
+		return getFiler().createResource(location, pkg, relativeName, originatingElements);
+	}
+	
+	protected final Filer getFiler() {
+		return processor.processingEnv.getFiler();
+	}
+	
+	protected final TypeMirror erasure(TypeMirror t) {
+		return processor.processingEnv.getTypeUtils().erasure(t);
+	}
+}

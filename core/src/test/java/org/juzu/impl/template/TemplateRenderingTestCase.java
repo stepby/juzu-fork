@@ -75,18 +75,65 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 		assertEquals(dateToTest.toString(), render(template));
 	}
 	
-	public void testSimple() throws Exception {
-		assertEquals("a", render("a"));
-		assertEquals("\n", render("\n"));
-		assertEquals("a", render("<%='a'%>"));
-		assertEquals("abc", render("a<%='b'%>c"));
-		assertEquals("a", render("<% out.print(\"a\"); %>"));
+	public void testFoo() throws Exception {
+		String template = "a";
+		String render = render(template);
+		assertEquals("a", render);
+	}
+	
+	public void testBar() throws Exception {
+		String template = "<%='a'%>";
+		String render = render(template);
+		assertEquals("a", render);
+	}
+	
+	public void testFooBar() throws Exception {
+		String template = "a<%='b'%>c";
+		String render = render(template);
+		assertEquals("abc", render);
+	}
+	
+	public void testJuu() throws Exception {
+		String template = "<% out.print(\"a\") %>";
+		String render = render(template);
+		assertEquals("a", render);
+	}
+	
+	public void testLineBreak() throws Exception {
+		String template = "\n";
+		String render = render(template);
+		assertEquals("\n", render);
 	}
 	
 	public void testMultiLine() throws Exception {
 		assertEquals("a\nb\nc\nd", render("a\nb\n<%= 'c' %>\nd"));
 		assertEquals("a\nb\n", render("a\n<% if(true) {\n%>b\n<% } %>"));
 		assertEquals("a\nb", render("<% //foo%>a\nb"));
+		assertEquals("ab", render("a<%\n%>b"));
+	}
+	
+	public void testIf() throws Exception {
+		String template = 
+				"a\n" +
+				"<% if (true) {\n %>" +
+				"b\n" +
+				"<% } %>";
+		String render = render(template);
+		assertEquals("a\nb\n", render);
+	}
+	
+	public void testLineComment() throws Exception {
+		String template = "<% //foo %>a\nb";
+		String render = render(template);
+		assertEquals("a\nb", render);
+	}
+	
+	public void testSimple() throws Exception {
+		assertEquals("a", render("a"));
+		assertEquals("\n", render("\n"));
+		assertEquals("a", render("<%='a'%>"));
+		assertEquals("abc", render("a<%='b'%>c"));
+		assertEquals("a", render("<% out.print(\"a\"); %>"));
 	}
 	
 	public void testContextResolution() throws Exception {
@@ -127,6 +174,19 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 	
 	public void testQuote() throws Exception {
 		assertEquals("\"", render("\""));
+	}
+	
+	public void testNoArgUrl() throws Exception {
+		String s = render("@{foo()}");
+		assertEquals("foo_value", s);
+	}
+	
+	public static String foo() {
+		return "foo_value";
+	}
+	
+	public static String echo(String s) {
+		return s;
 	}
 	
 	public void testException() throws Exception {
@@ -171,6 +231,22 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 		}
 	}
 	
+	public void testScriptLineNumber() throws Exception {
+		testLineNumber("<%");
+		assertLineNumber(2, "throw new Exception('e')", "<%\nthrow new Exception('e')%>");
+	}
+	
+	public void testExpressionLineNumber() throws Exception {
+		testLineNumber("<%=");
+	}
+	
+	private void testLineNumber(String prolog) throws Exception {
+		assertLineNumber(1, "throw new Exception('a')", prolog + "throw new Exception('a')%>");
+		assertLineNumber(1, "throw new Exception('b')", "foo" + prolog + "throw new Exception('b')%>");
+		assertLineNumber(2, "throw new Exception('c')", "foo\n" + prolog + "throw new Exception('c')%>");
+		assertLineNumber(1, "throw new Exception('d')", "<%;%>foo" + prolog + "throw new Exception('d')%>");
+	}
+	
 	public static Object out;
 	
 	public void testWriteAccess() throws Exception {
@@ -179,5 +255,24 @@ public class TemplateRenderingTestCase extends AbstractTemplateTestCase {
 		GroovyTemplate template = template("<%" + TemplateRenderingTestCase.class.getName() + ".out = out; %>");
 		template.render(new WriterPrinter(writer), null, null);
 		assertNotNull(out);
+	}
+	
+	private void assertLineNumber(int expectedLineNumber, String expectedText, String script) throws IOException {
+		GroovyTemplate template = template(script);
+		try {
+			template.render(new WriterPrinter(new StringWriter()), null, null);
+			fail();
+		} catch (TemplateExecutionException t) {
+			assertEquals(expectedText, t.getText());
+			assertEquals(expectedLineNumber, t.getLine());
+			StackTraceElement scriptElt = null;
+			for(StackTraceElement elt : t.getCause().getStackTrace()) {
+				if(elt.getClassName().equals(template.getClassName())) {
+					scriptElt = elt;
+					break;
+				}
+			}
+			assertEquals(expectedLineNumber, scriptElt.getLineNumber());
+		}
 	}
 }

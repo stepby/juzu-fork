@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 
-import org.juzu.impl.application.ApplicationProcessor;
+import org.juzu.impl.apt.JuzuProcessor;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
@@ -53,7 +53,7 @@ public class CompilerHelper<S> {
 	public void assertCompile() {
 		try {
 			Compiler<S, RAMPath> compiler = new Compiler<S, RAMPath>(in, out);
-			compiler.addAnnotationProcessor(new ApplicationProcessor());
+			compiler.addAnnotationProcessor(new JuzuProcessor());
 			AbstractTestCase.assertEquals(Collections.emptyList(), compiler.compile());
 			cl = new URLClassLoader(new URL[] { out.getURL() }, Thread.currentThread().getContextClassLoader());
 		} catch(IOException e) {
