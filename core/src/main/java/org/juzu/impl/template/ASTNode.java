@@ -32,15 +32,15 @@ import org.juzu.utils.Location;
  */
 public abstract class ASTNode {
 
-	private final Location pos;
+	private final Location beginPosition;
 	
 	public ASTNode(Location pos) {
 		if(pos ==  null) throw new NullPointerException("No null position accepted");
-		this.pos = pos;
+		this.beginPosition = pos;
 	}
 	
-	public Location getPosition() {
-		return pos;
+	public Location getBeginPosition() {
+		return beginPosition;
 	}
 	
 	public static class Template extends ASTNode {
@@ -162,7 +162,7 @@ public abstract class ASTNode {
 		
 		@Override
 		public String toString() {
-			return getClass().getSimpleName() + "[position=" + getPosition() + ", data=" + data + "]"; 
+			return getClass().getSimpleName() + "[position=" + getBeginPosition() + ", data=" + data + "]"; 
 		}
 		
 		@Override
@@ -176,25 +176,32 @@ public abstract class ASTNode {
 		}
 	}
 	
-	public static class Section {
+	public static class Section extends ASTNode {
 		
 		private final SectionType type;
+		
 		private final List<ASTNode> items;
 		
+		private final int beginOffset;
+		
+		private final int endOffset;
+		
+		private final Location endPosition;
+		
 		Section(SectionType type, String text) {
-			this(type, text, 0, 0);
+			this(type, 0, text.length(),text, new Location(1, 1), new Location(1,1));
 		}
 		
-		Section(SectionType type, String text, Location pos) {
-			this(type, text, pos.getCol(), pos.getLine());
-		}
-		
-		Section(SectionType type, String text, int colNumber, int lineNumber) {
+		Section(SectionType type, int beginOffset, int endOffset, String text, Location beginPosition, Location endPosition) {
+			super(beginPosition);
+			//
 			if(type == null) throw new NullPointerException();
 			if(text == null) throw new NullPointerException();
 			
 			//
 			List<ASTNode> sections = new ArrayList<ASTNode>();
+			int lineNumber = beginPosition.getLine();
+			int colNumber = beginPosition.getCol();
 			
 			int from = 0;
 			while(true) {
@@ -213,8 +220,24 @@ public abstract class ASTNode {
 				}
 			}
 			
+			//
+			this.beginOffset = beginOffset;
+			this.endOffset = endOffset;
 			this.type = type;
 			this.items = Collections.unmodifiableList(sections);
+			this.endPosition = endPosition;
+		}
+		
+		public int getBeginOffset() {
+			return beginOffset;
+		}
+		
+		public int getEndOffset() {
+			return endOffset;
+		}
+		
+		public Location getEndPosition() {
+			return endPosition;
 		}
 		
 		public SectionType getType() {
@@ -249,7 +272,7 @@ public abstract class ASTNode {
 		
 		@Override
 		public String toString() {
-			return getClass().getSimpleName() + "[position=" + getPosition() + "]";
+			return getClass().getSimpleName() + "[position=" + getBeginPosition() + "]";
 		}
 		
 		@Override

@@ -113,7 +113,7 @@ public abstract class GroovyTemplate extends TemplateStub {
 				ASTNode.Text item = locationTable.get(lineNumber);
 				int templateLineNumber;
 				if(item != null) {
-					templateLineNumber = item.getPosition().getLine();
+					templateLineNumber = item.getBeginPosition().getLine();
 					if(firstItem == null) firstItem = item;
 					else templateLineNumber = -1;
 					
@@ -129,7 +129,7 @@ public abstract class GroovyTemplate extends TemplateStub {
 		
 		t.setStackTrace(trace);
 		if(firstItem != null)
-			return new TemplateExecutionException(templateId, firstItem.getPosition(), firstItem.getData(), t);
+			return new TemplateExecutionException(templateId, firstItem.getBeginPosition(), firstItem.getData(), t);
 		else
 			return new TemplateExecutionException(templateId, null, null, t);
 	}

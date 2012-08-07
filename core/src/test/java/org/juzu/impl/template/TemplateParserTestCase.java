@@ -105,10 +105,10 @@ public class TemplateParserTestCase extends TestCase {
 	
 	public void testPosition() {
 		List<ASTNode.Section> list = parser.parse("a\nb<%= foo %>c").getSections();
-		assertEquals(new Location(1,1), list.get(0).getItems().get(0).getPosition());
-		assertEquals(new Location(2,1), list.get(0).getItems().get(1).getPosition());
-		assertEquals(new Location(1,2), list.get(0).getItems().get(2).getPosition());
-		assertEquals(new Location(2,2), list.get(1).getItems().get(0).getPosition());
-		assertEquals(new Location(12,2), list.get(2).getItems().get(0).getPosition());
+		assertEquals(new Location(1,1), list.get(0).getItems().get(0).getBeginPosition());
+		assertEquals(new Location(2,1), list.get(0).getItems().get(1).getBeginPosition());
+		assertEquals(new Location(1,2), list.get(0).getItems().get(2).getBeginPosition());
+		assertEquals(new Location(2,2), list.get(1).getItems().get(0).getBeginPosition());
+		assertEquals(new Location(11,2), list.get(2).getItems().get(0).getBeginPosition());
 	}
 }
