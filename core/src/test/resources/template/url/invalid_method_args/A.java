@@ -15,31 +15,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.compiler;
+package template.url.invalid_method_args;
 
-import javax.lang.model.element.Element;
+import org.juzu.Render;
+import org.juzu.Resource;
+import org.juzu.template.Template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class CompilationException extends RuntimeException
-{
-	
-	private final Element element;
+public class A {
 
-	public CompilationException(Element element, String message) {
-		super(message);
-		this.element = element;
-	}
+	@Resource("index.gtmpl")
+	private Template template;
 	
-	public CompilationException(Element element, String message, Throwable cause) {
-		super(message, cause);
-		this.element = element;
-	}
-	
-	public Element getElement() {
-		return element;
+	@Render
+	public void foo() {
+		
 	}
 }

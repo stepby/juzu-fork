@@ -43,6 +43,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 
 import org.juzu.Action;
+import org.juzu.AmbiguousResolutionException;
 import org.juzu.Application;
 import org.juzu.Binding;
 import org.juzu.Render;
@@ -98,7 +99,7 @@ public class ApplicationProcessor extends ProcessorPlugin {
 			this.controllers = new ArrayList<ControllerMetaData>();
 		}
 		
-		public MethodMetaData resolve(String name, Set<String> parameters) {
+		public MethodMetaData resolve(String name, Set<String> parameters) throws AmbiguousResolutionException {
 			TreeSet<MethodMetaData> set = new TreeSet<MethodMetaData>(new Comparator<MethodMetaData>() {
 				public int compare(MethodMetaData o1, MethodMetaData o2) {
 					return ((Integer) o1.parameterNames.size()).compareTo((Integer) o2.parameterNames.size());
@@ -112,9 +113,13 @@ public class ApplicationProcessor extends ProcessorPlugin {
 					}
 				}
 			}
-			
-			//
-			return set.iterator().next();
+			if(set.isEmpty()) {
+				return null;
+			} else if(set.size() == 1) {
+				return set.iterator().next();
+			} else {
+				throw new AmbiguousResolutionException();
+			}
 		}
 
 		public String getClassName() {

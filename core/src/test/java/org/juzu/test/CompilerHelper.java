@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.List;
 
 import org.juzu.application.JuzuProcessor;
+import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
@@ -45,6 +47,18 @@ public class CompilerHelper<S> {
 		try {
 			this.in = in;
 			this.out = new RAMFileSystem();
+		} catch(IOException e) {
+			throw AbstractTestCase.failure(e);
+		}
+	}
+	
+	public List<CompilationError> failCompile() {
+		try {
+			Compiler<S, RAMPath> compiler = new Compiler<S, RAMPath>(in, out);
+			compiler.addAnnotationProcessor(new JuzuProcessor());
+			List<CompilationError> errors = compiler.compile();
+			AbstractTestCase.assertTrue("Was expecting compilation to fail", errors.size() > 0);
+			return errors;
 		} catch(IOException e) {
 			throw AbstractTestCase.failure(e);
 		}

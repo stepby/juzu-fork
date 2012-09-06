@@ -24,7 +24,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.utils.Content;
@@ -55,10 +57,19 @@ public class DiskFileSystem extends ReadFileSystem<File> {
 		});
 	}
 	
-	public DiskFileSystem(final File root, final String rootName) {
+	public DiskFileSystem(final File root, final String ... path) {
 		this(root, new FilenameFilter() {
+			final Map<File, String> valids = new HashMap<File, String>();
+			{
+				File current = root;
+				for(String name : path) {
+					valids.put(current, name);
+					current = new File(current, name);
+				}
+			}
 			public boolean accept(File dir, String name) {
-				return !(dir == root && !name.equals(rootName));
+				String found = valids.get(dir);
+				return found == null || found.equals(name);
 			}
 		});
 	}
