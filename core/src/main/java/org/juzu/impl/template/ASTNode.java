@@ -251,6 +251,11 @@ public abstract class ASTNode {
 				return name.equals(that.name) && args.equals(that.args);
 			} else return false;
 		}
+		
+		@Override
+		public String toString() {
+			return getClass().getSimpleName() + "[name=" + name +", args=" + args + "]";
+		}
 	}
 	
 	public static class Section extends Block {
