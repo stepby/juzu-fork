@@ -43,9 +43,9 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.juzu.application.ApplicationDescriptor;
+import org.juzu.application.JuzuProcessor;
 import org.juzu.impl.application.ApplicationContext;
 import org.juzu.impl.application.Bootstrap;
-import org.juzu.impl.apt.JuzuProcessor;
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ActionContext;

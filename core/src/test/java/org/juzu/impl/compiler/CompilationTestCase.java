@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -40,6 +41,7 @@ import javax.tools.StandardLocation;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
+import org.jboss.util.NoSuchMethodException;
 import org.juzu.impl.spi.fs.disk.DiskFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMDir;
 import org.juzu.impl.spi.fs.ram.RAMFile;
@@ -190,5 +192,55 @@ public class CompilationTestCase extends TestCase {
 		fs.getRoot().addFile("A.java").update("public class A {");
 		Compiler<RAMPath, ?> compiler = new Compiler<RAMPath, RAMPath>(fs, new RAMFileSystem());
 		assertEquals(1, compiler.compile().size());
+	}
+	
+	public void testAnnotationException() throws Exception {
+		RAMFileSystem ramFs = new RAMFileSystem();
+		RAMDir root = ramFs.getRoot();
+		root.addFile("A.java").update("@Deprecated public class A {}");
+		
+		//
+		Compiler<RAMPath, ?> compiler = new Compiler<RAMPath, RAMPath>(ramFs, new RAMFileSystem());
+		ProcessorPlugin plugin = new ProcessorPlugin() {
+			@Override
+			public void process() throws CompilationException {
+				Set<? extends Element> elements = getElementsAnnotatedWith(Deprecated.class);
+				if(elements.size() == 1) {
+					Element element = elements.iterator().next();
+					throw new CompilationException(element, "the_message");
+				}
+			}
+		};
+		compiler.addAnnotationProcessor(new Processor(plugin));
+		List<CompilationError> errors = compiler.compile();
+		assertEquals(1, errors.size());
+		CompilationError error = errors.get(0);
+		assertEquals("/A.java", error.getSource());
+		assertTrue(error.getMessage().contains("the_message"));
+		assertNull(error.getSourceFile());
+		assertNotNull(error.getLocation());
+		
+		//
+		compiler = new Compiler<RAMPath, RAMPath>(ramFs, new RAMFileSystem());
+		plugin = new ProcessorPlugin() {
+			boolean failed = false;
+			@Override
+			public void process() throws CompilationException {
+				if(!failed) 
+				{
+					failed = true;
+					throw new NoSuchElementException("the_message");
+				}
+			}
+		};
+		
+		compiler.addAnnotationProcessor(new Processor(plugin));
+		errors = compiler.compile();
+		assertEquals(1, errors.size());
+		error = errors.get(0);
+		assertNull(error.getSource());
+		assertTrue(error.getMessage().contains("the_message"));
+		assertNull(error.getSourceFile());
+		assertNull(error.getLocation());
 	}
 }

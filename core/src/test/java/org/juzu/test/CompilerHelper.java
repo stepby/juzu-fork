@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 
-import org.juzu.impl.apt.JuzuProcessor;
+import org.juzu.application.JuzuProcessor;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.spi.fs.ReadFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;

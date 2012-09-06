@@ -26,7 +26,7 @@ import javax.tools.JavaFileObject;
 
 import junit.framework.TestCase;
 
-import org.juzu.impl.apt.JuzuProcessor;
+import org.juzu.application.JuzuProcessor;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ram.RAMDir;

@@ -26,8 +26,8 @@ import java.util.Collections;
 
 import junit.framework.TestCase;
 
+import org.juzu.application.JuzuProcessor;
 import org.juzu.application.PhaseLiteral;
-import org.juzu.impl.apt.JuzuProcessor;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;

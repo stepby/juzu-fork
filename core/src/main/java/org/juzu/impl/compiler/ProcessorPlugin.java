@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.apt;
+package org.juzu.impl.compiler;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -41,10 +41,10 @@ public class ProcessorPlugin {
 	public void init() {
 	}
 	
-	public void process() {
+	public void process() throws CompilationException {
 	}
 	
-	public void over() {
+	public void over() throws CompilationException {
 	}
 	
 	public void destroy() {

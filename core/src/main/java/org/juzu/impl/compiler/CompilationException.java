@@ -15,22 +15,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.apt;
+package org.juzu.impl.compiler;
 
-import javax.annotation.processing.SupportedAnnotationTypes;
-
-import org.juzu.impl.application.ApplicationProcessor;
-import org.juzu.impl.template.TemplateProcessor;
+import javax.lang.model.element.Element;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@SupportedAnnotationTypes({"*"})
-public class JuzuProcessor extends Processor {
+public class CompilationException extends Exception
+{
+	
+	private final Element element;
 
-	public JuzuProcessor() {
-		super(new ApplicationProcessor(), new TemplateProcessor());
+	public CompilationException(Element element, String message) {
+		super(message);
+		this.element = element;
+	}
+	
+	public CompilationException(Element element, String message, Throwable cause) {
+		super(message, cause);
+		this.element = element;
+	}
+	
+	public Element getElement() {
+		return element;
 	}
 }

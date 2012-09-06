@@ -23,34 +23,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.juzu.Application;
 import org.juzu.Resource;
 import org.juzu.impl.application.ApplicationProcessor;
 import org.juzu.impl.application.ApplicationProcessor.ApplicationMetaData;
-import org.juzu.impl.apt.ProcessorPlugin;
+import org.juzu.impl.compiler.ProcessorPlugin;
 import org.juzu.impl.spi.template.MethodInvocation;
 import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.spi.template.TemplateGeneratorContext;
 import org.juzu.impl.spi.template.TemplateProvider;
-import org.juzu.impl.utils.PackageMap;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
