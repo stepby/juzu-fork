@@ -15,30 +15,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu.portlet;
 
-import java.util.Map;
+import javax.portlet.ActionResponse;
 
-import org.juzu.application.Phase;
+import org.juzu.Response;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext {
+public class ResponseImpl implements Response
+{
+	private final ActionResponse response;
+	
+   public ResponseImpl(ActionResponse actionResponse)
+   {
+   	this.response = actionResponse;
+   }
 
-	protected final ClassLoader classLoader;
-	
-	public RequestContext(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
-	
-	public abstract Map<String, String[]> getParameters();
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
+	public void setParameter(String parameterName, String parameterValue)
+   {
+	   response.setRenderParameter(parameterName, parameterValue);
+   }
 }

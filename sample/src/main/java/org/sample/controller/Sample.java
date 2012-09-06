@@ -51,8 +51,8 @@ public class Sample {
 	Printer printer;
 	
 	@Action
-	public PhaseLiteral action() {
-		return Sample_.render;
+	public void action() {
+		return org.sample.SampleApplication.foo("bar");
 	}
 	
 	@Render

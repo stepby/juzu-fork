@@ -29,6 +29,7 @@ import javax.inject.Singleton;
 
 import org.juzu.RenderScoped;
 import org.juzu.Resource;
+import org.juzu.Response;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.impl.cdi.Export;
 import org.juzu.impl.cdi.ScopeController;
@@ -75,17 +76,24 @@ public class ApplicationContext {
 		return descriptor;
 	}
 	
-	public void invoke(RequestContext context) {
+	public void invoke(ActionContext actionContext) {
+		Object ret = doInvoke((RequestContext)actionContext);
+		if(ret instanceof Response) {
+			Response renderResponse;
+		}
+	}
+	
+	public void invoke(RenderContext renderContext) {
+		invoke((RequestContext) renderContext);
+	}
+	
+	public Object invoke(RequestContext context) {
 		ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(context.getClassLoader());
 			current.set(context);
 			ScopeController.start(context.getPhase());
-			if(context instanceof RenderContext) {
-				doInvoke((RenderContext) context);
-			} else if(context instanceof ActionContext) {
-				doInvoke(context);
-			} else throw new UnsupportedOperationException();
+			return doInvoke(context);
 		} finally {
 			current.set(null);
 			ScopeController.stop();
@@ -93,7 +101,7 @@ public class ApplicationContext {
 		}
 	}
 	
-	private void doInvoke(RequestContext context) {
+	private Object doInvoke(RequestContext context) {
 		ControllerMethod method = resolver.resolve(context.getPhase(), context.getParameters());
 		if(method == null) throw new UnsupportedOperationException("handle me gracefully");
 		else {
@@ -115,12 +123,15 @@ public class ApplicationContext {
 						args[i] = values[0];
 					}
 					
-					method.getMethod().invoke(o, args);
+					return method.getMethod().invoke(o, args);
 				} catch(Exception e) {
 					throw new UnsupportedOperationException("handle me gracefully", e);
 				}
 			}
 		}
+		
+		//Should do something else instead
+		return null;
 	}
 	
 	@Produces

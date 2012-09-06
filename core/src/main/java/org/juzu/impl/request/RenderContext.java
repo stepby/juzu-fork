@@ -29,31 +29,23 @@ import org.juzu.text.Printer;
  * @version $Id$
  *
  */
-public class RenderContext extends RequestContext {
+public abstract class RenderContext extends RequestContext {
 	
-	private final Printer printer;
-	
-	private URLBuilderContext urlBuilderContext;
-
-	public RenderContext(ClassLoader classLoader, Map<String, String[]> parameters, Printer printer, URLBuilderContext urlBuilderContext) {
-		super(classLoader, parameters);
-		
-		//
-		this.printer = printer;
-		this.urlBuilderContext = urlBuilderContext;
+	public RenderContext(ClassLoader classLoader) {
+		super(classLoader);
 	}
 	
-	public Printer getPrinter() {
-		return printer;
-	}
+	public abstract Printer getPrinter();
 
 	@Override
-	public Phase getPhase() {
+	public final Phase getPhase() {
 		return Phase.RENDER;
 	}
 	
-	public URLBuilder createURLBuilder(ControllerMethod method) {
-		URLBuilder builder = urlBuilderContext.createURLBuilder(method.getPhase());
+	protected abstract URLBuilder createURLBuilder(Phase phase);
+	
+	public final URLBuilder createURLBuilder(ControllerMethod method) {
+		URLBuilder builder = createURLBuilder(method.getPhase());
 		List<ControllerParameter> parameters = method.getAnnotationParameters();
 		for(int i = 0; i < parameters.size(); i++) {
 			ControllerParameter parameter = parameters.get(i);
@@ -64,26 +56,26 @@ public class RenderContext extends RequestContext {
 		return builder;
 	}
 	
-	public URLBuilder createURLBuilder(ControllerMethod method, Object value) {
+	public final URLBuilder createURLBuilder(ControllerMethod method, Object arg) {
 		URLBuilder builder = createURLBuilder(method);
 		
 		//
 		ControllerParameter param = method.getArgumentParameters().get(0);
-		if(value != null) {
-			builder.setParameter(param.getName(), String.valueOf(value));
+		if(arg != null) {
+			builder.setParameter(param.getName(), String.valueOf(arg));
 		}
 		
 		//
 		return builder;
 	}
 	
-	public URLBuilder createURLBuilder(ControllerMethod method, Object[] values) {
+	public URLBuilder createURLBuilder(ControllerMethod method, Object[] args) {
 		URLBuilder builder = createURLBuilder(method);
 		
 		//Fill in argument parameters
-		for(int i = 0; i < values.length; i++) {
-			if(values[i] != null) {
-				builder.setParameter(method.getArgumentParameters().get(i).getName(), String.valueOf(values[i]));
+		for(int i = 0; i < args.length; i++) {
+			if(args[i] != null) {
+				builder.setParameter(method.getArgumentParameters().get(i).getName(), String.valueOf(args[i]));
 			}
 		}
 		

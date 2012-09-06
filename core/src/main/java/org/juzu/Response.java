@@ -15,30 +15,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
-
-import java.util.Map;
-
-import org.juzu.application.Phase;
+package org.juzu;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext {
-
-	protected final ClassLoader classLoader;
-	
-	public RequestContext(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
-	
-	public abstract Map<String, String[]> getParameters();
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
+public interface Response
+{
+	void setParameter(String parameterName, String parameterValue);
 }

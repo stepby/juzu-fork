@@ -15,34 +15,30 @@
  */
 package org.juzu.portlet;
 
-import javax.portlet.RenderResponse;
+import javax.portlet.PortletURL;
 
 import org.juzu.URLBuilder;
-import org.juzu.application.Phase;
-import org.juzu.impl.request.URLBuilderContext;
 
 /**
  * Author : Nguyen Thanh Hai
  *          haithanh0809@gmail.com
  * Aug 1, 2012  
  */
+public class URLBuilderImpl implements URLBuilder {
 
-public class PortletURLBuilderContext implements URLBuilderContext {
+	private final PortletURL url;
 	
-	private final RenderResponse response;
-	
-	public PortletURLBuilderContext(RenderResponse response) {
-		this.response = response;
+	URLBuilderImpl(PortletURL url) {
+		this.url = url;
 	}
-
-	public URLBuilder createURLBuilder(Phase phase) {
-		switch(phase) {
-			case ACTION:
-				return new PortletURLBuilder(response.createActionURL());
-			case RENDER:
-				return new PortletURLBuilder(response.createRenderURL());
-			default:
-				throw new AssertionError();
-		}
+	
+	public URLBuilder setParameter(String name, String value) {
+		url.setParameter(name, value);
+		return this;
+	}
+	
+	@Override
+	public String toString() {
+		return url.toString();
 	}
 }

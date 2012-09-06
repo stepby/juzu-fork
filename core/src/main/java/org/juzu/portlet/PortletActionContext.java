@@ -15,30 +15,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu.portlet;
 
 import java.util.Map;
 
-import org.juzu.application.Phase;
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+
+import org.juzu.Response;
+import org.juzu.impl.request.ActionContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext {
+public class PortletActionContext extends ActionContext
+{
+	
+	private final ActionRequest actionrRequest;
+	
+	private final ActionResponse actionResponse;
+	
+	private ResponseImpl response;
 
-	protected final ClassLoader classLoader;
-	
-	public RequestContext(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
-	
-	public abstract Map<String, String[]> getParameters();
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
+   public PortletActionContext(ClassLoader classLoader, ActionRequest actionRequest, ActionResponse actionResponse)
+   {
+	   super(classLoader);
+	   this.actionResponse = actionResponse;
+	   this.actionrRequest = actionRequest;
+	   this.response = null;
+   }
+
+   @Override
+   public Response createResponse()
+   {
+	   return response;
+   }
+
+   @Override
+   public Map<String, String[]> getParameters()
+   {
+	   return actionrRequest.getParameterMap();
+   }
 }

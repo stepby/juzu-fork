@@ -17,8 +17,9 @@
  */
 package org.juzu.impl.request;
 
-import java.util.Map;
+import java.util.List;
 
+import org.juzu.Response;
 import org.juzu.application.Phase;
 
 /**
@@ -26,14 +27,51 @@ import org.juzu.application.Phase;
  * @version $Id$
  *
  */
-public class ActionContext extends RequestContext {
+public abstract class ActionContext extends RequestContext {
 
-	public ActionContext(ClassLoader classLoader, Map<String, String[]> parameters) {
-		super(classLoader, parameters);
+	public ActionContext(ClassLoader classLoader) {
+		super(classLoader);
 	}
 
 	@Override
 	public Phase getPhase() {
 		return Phase.ACTION;
 	}
+	
+	public void map(Response response, ControllerMethod method) {
+		List<ControllerParameter> annotationParameters = method.getAnnotationParameters();
+		for(int i = 0; i < annotationParameters.size(); i++) {
+			ControllerParameter annotationParameter = annotationParameters.get(i);
+			response.setParameter(annotationParameter.getName(), annotationParameter.getValue());
+		}
+	}
+	
+	public Response createResponse(ControllerMethod method) {
+		Response response = createResponse();
+		map(response, method);
+		return response;
+	}
+	
+	public Response createResponse(ControllerMethod method, Object arg) {
+		Response response = createResponse();
+		map(response, method);
+		if(arg != null) {
+			ControllerParameter param = method.getArgumentParameters().get(0);
+			response.setParameter(param.getName(), arg.toString());
+		}
+		return response;
+	}
+	
+	public Response createResponse(ControllerMethod method, Object[] args) {
+		Response response = createResponse();
+		map(response, method);
+		List<ControllerParameter> argumentParameters = method.getArgumentParameters();
+		for(int i = 0; i < argumentParameters.size(); i++) {
+			ControllerParameter argParameter = argumentParameters.get(i);
+			response.setParameter(argParameter.getName(), args[i].toString());
+		}
+		return response;
+	}
+	
+	public abstract Response createResponse();
 }
