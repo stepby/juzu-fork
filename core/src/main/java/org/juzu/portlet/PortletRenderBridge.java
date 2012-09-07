@@ -18,14 +18,13 @@
 package org.juzu.portlet;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.juzu.URLBuilder;
 import org.juzu.application.Phase;
-import org.juzu.impl.request.RenderContext;
+import org.juzu.impl.request.RenderBridge;
 import org.juzu.text.Printer;
 import org.juzu.text.WriterPrinter;
 
@@ -34,31 +33,22 @@ import org.juzu.text.WriterPrinter;
  * @version $Id$
  *
  */
-public class PortletRenderContext extends RenderContext
+public class PortletRenderBridge extends PortletRequestBridge<RenderRequest, RenderResponse> implements RenderBridge
 {
-
-	private final RenderRequest request;
-	
-	private final RenderResponse response;
-	
 	private final Printer printer;
 	
-   public PortletRenderContext(ClassLoader classLoader, RenderRequest request, RenderResponse response) throws IOException
+   public PortletRenderBridge(RenderRequest request, RenderResponse response) throws IOException
    {
-	   super(classLoader);
-	   this.request = request;
-	   this.response = response;
+	   super(request, response);
 	   this.printer = new WriterPrinter(response.getWriter());
    }
 
-   @Override
    public Printer getPrinter()
    {
 	   return printer;
    }
 
-   @Override
-   protected URLBuilder createURLBuilder(Phase phase)
+   public URLBuilder createURLBuilder(Phase phase)
    {
    	switch (phase)
       {
@@ -69,11 +59,5 @@ public class PortletRenderContext extends RenderContext
 			default :
 				throw new AssertionError();
 		}
-   }
-
-   @Override
-   public Map<String, String[]> getParameters()
-   {
-	   return request.getParameterMap();
    }
 }

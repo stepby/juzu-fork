@@ -17,35 +17,19 @@
  */
 package org.juzu.impl.request;
 
-import java.util.Map;
-
+import org.juzu.URLBuilder;
 import org.juzu.application.Phase;
+import org.juzu.text.Printer;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext<B extends RequestBridge> {
+public interface RenderBridge extends RequestBridge
+{
 
-	protected final ClassLoader classLoader;
+	URLBuilder createURLBuilder(Phase phase);
 	
-	protected final B bridge;
-	
-	public RequestContext(ClassLoader classLoader, B bridge) {
-		this.classLoader = classLoader;
-		this.bridge = bridge;
-	}
-	
-	public final Map<String, String[]> getParameters() {
-		return bridge.getParameters();
-	}
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
-	
-	public abstract Map<Object, Object> getContext(Scope scope);
+	Printer getPrinter();
 }

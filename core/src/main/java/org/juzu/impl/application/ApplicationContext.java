@@ -18,6 +18,7 @@
 package org.juzu.impl.application;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -92,11 +93,11 @@ public class ApplicationContext {
 		try {
 			Thread.currentThread().setContextClassLoader(context.getClassLoader());
 			current.set(context);
-			ScopeController.start(context.getPhase());
+			ScopeController.begin(context);
 			return doInvoke(context);
 		} finally {
 			current.set(null);
-			ScopeController.stop();
+			ScopeController.end();
 			Thread.currentThread().setContextClassLoader(oldCL);
 		}
 	}
@@ -119,7 +120,8 @@ public class ApplicationContext {
 					List<ControllerParameter> params = method.getArgumentParameters();
 					Object[] args = new Object[params.size()];
 					for(int i = 0; i < args.length; i++) {
-						String values[] = context.getParameters().get(params.get(i).getName());
+						Map<String, String[]> map = context.getParameters();
+						String[] values = map.get(params.get(i).getName());
 						args[i] = values[0];
 					}
 					

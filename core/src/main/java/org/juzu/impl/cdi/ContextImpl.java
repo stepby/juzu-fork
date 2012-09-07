@@ -24,6 +24,7 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
 import org.juzu.application.Phase;
+import org.juzu.impl.request.Scope;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -34,13 +35,13 @@ public class ContextImpl implements Context {
 	
 	private final ScopeController controller;
 	
-	private final Phase phase;
+	private final Scope scope;
 	
 	private final Class<? extends Annotation> scopeType;
 	
-	public ContextImpl(ScopeController controller, Phase phase, Class<? extends Annotation> scopeType) {
+	public ContextImpl(ScopeController controller, Scope scope, Class<? extends Annotation> scopeType) {
 		this.controller = controller;
-		this.phase = phase;
+		this.scope = scope;
 		this.scopeType = scopeType;
 	}
 
@@ -49,7 +50,7 @@ public class ContextImpl implements Context {
 	}
 
 	public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
-		return controller.get(phase, contextual, creationalContext);
+		return controller.get(scope, contextual, creationalContext);
 	}
 
 	public <T> T get(Contextual<T> contextual) {
@@ -57,6 +58,6 @@ public class ContextImpl implements Context {
 	}
 
 	public boolean isActive() {
-		return controller.currentPhase.get() == phase;
+		return controller.isActive(scope);
 	}
 }

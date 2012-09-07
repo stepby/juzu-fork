@@ -15,37 +15,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu.portlet;
 
-import java.util.Map;
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
 
-import org.juzu.application.Phase;
+import org.juzu.Response;
+import org.juzu.impl.request.ActionBridge;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext<B extends RequestBridge> {
+public class PortletActionBridge extends PortletRequestBridge<ActionRequest, ActionResponse> implements ActionBridge
+{
+	
+	private ResponseImpl response;
 
-	protected final ClassLoader classLoader;
-	
-	protected final B bridge;
-	
-	public RequestContext(ClassLoader classLoader, B bridge) {
-		this.classLoader = classLoader;
-		this.bridge = bridge;
-	}
-	
-	public final Map<String, String[]> getParameters() {
-		return bridge.getParameters();
-	}
-	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
-	
-	public abstract Phase getPhase();
-	
-	public abstract Map<Object, Object> getContext(Scope scope);
+   public PortletActionBridge(ActionRequest actionRequest, ActionResponse actionResponse)
+   {
+	   super(actionRequest, actionResponse);
+	   this.response = null;
+   }
+
+   public Response createResponse()
+   {
+   	if(response == null) {
+   		response = new ResponseImpl(super.response);
+   	}
+	   return response;
+   }
 }

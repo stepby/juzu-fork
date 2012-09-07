@@ -17,35 +17,22 @@
  */
 package org.juzu.impl.request;
 
-import java.util.Map;
-
-import org.juzu.application.Phase;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public abstract class RequestContext<B extends RequestBridge> {
-
-	protected final ClassLoader classLoader;
+public enum Scope
+{
+	RENDER,
 	
-	protected final B bridge;
+	ACTION,
 	
-	public RequestContext(ClassLoader classLoader, B bridge) {
-		this.classLoader = classLoader;
-		this.bridge = bridge;
-	}
+	REQUEST,
 	
-	public final Map<String, String[]> getParameters() {
-		return bridge.getParameters();
-	}
+	SESSION,
 	
-	public final ClassLoader getClassLoader() {
-		return classLoader;
-	}
+	FLASH,
 	
-	public abstract Phase getPhase();
-	
-	public abstract Map<Object, Object> getContext(Scope scope);
+	IDENTITY
 }

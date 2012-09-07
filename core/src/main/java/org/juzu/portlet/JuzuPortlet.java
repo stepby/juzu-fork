@@ -60,8 +60,6 @@ import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
 import org.juzu.impl.spi.fs.war.WarFileSystem;
 import org.juzu.impl.utils.DevClassLoader;
-import org.juzu.text.Printer;
-import org.juzu.text.WriterPrinter;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -191,7 +189,7 @@ public class JuzuPortlet implements Portlet {
 	}
 
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
-		ActionContext actionContext = new PortletActionContext(classLoader, request, response);
+		ActionContext actionContext = new ActionContext(classLoader, new PortletActionBridge(request, response));
 		
 		//
 		applicationContext.invoke(actionContext);
@@ -202,7 +200,7 @@ public class JuzuPortlet implements Portlet {
 
 		//
 		if(errors.isEmpty()) {
-			RenderContext renderContext = new PortletRenderContext(classLoader, request, response);
+			RenderContext renderContext = new RenderContext(classLoader, new PortletRenderBridge(request, response));
 			applicationContext.invoke(renderContext);
 		} else {
 //			Element elt	 = response.createElement("link");

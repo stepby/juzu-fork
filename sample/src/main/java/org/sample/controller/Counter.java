@@ -15,23 +15,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu;
+package org.sample.controller;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.Serializable;
 
-import javax.enterprise.context.NormalScope;
+import javax.enterprise.context.SessionScoped;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@NormalScope
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequestScoped {
-
+@SessionScoped
+public class Counter implements Serializable
+{
+	private int value;
+	
+	public void increment() {
+		value++;
+	}
+	
+	public int getValue() {
+		return value;
+	}
 }

@@ -47,8 +47,9 @@ public class JuzuExt implements Extension {
 	}
 	
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-		event.addContext(ScopeController.INSTANCE.resquestContext);
+		event.addContext(ScopeController.INSTANCE.requestContext);
 		event.addContext(ScopeController.INSTANCE.renderContext);
 		event.addContext(ScopeController.INSTANCE.actionContext);
+		event.addContext(ScopeController.INSTANCE.sessionContext);
 	}
 }
