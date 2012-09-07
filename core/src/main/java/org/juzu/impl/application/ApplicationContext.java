@@ -104,7 +104,7 @@ public class ApplicationContext {
 	
 	private Object doInvoke(RequestContext context) {
 		ControllerMethod method = resolver.resolve(context.getPhase(), context.getParameters());
-		if(method == null) throw new UnsupportedOperationException("handle me gracefully");
+		if(method == null) throw new UnsupportedOperationException("handle me gracefully: no method could be resolved");
 		else {
 			Class<?> type = method.getType();
 			BeanManager mgr = container.getManager();

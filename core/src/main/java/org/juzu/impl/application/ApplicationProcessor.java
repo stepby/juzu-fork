@@ -45,7 +45,6 @@ import javax.tools.StandardLocation;
 import org.juzu.Action;
 import org.juzu.AmbiguousResolutionException;
 import org.juzu.Application;
-import org.juzu.Binding;
 import org.juzu.Render;
 import org.juzu.Response;
 import org.juzu.URLBuilder;
@@ -160,11 +159,9 @@ public class ApplicationProcessor extends ProcessorPlugin {
 		
 		private final ExecutableType type;
 		
-		private final List<ControllerParameter> annotationParameters;
-		
 		private final LinkedHashSet<String> parameterNames;
 		
-		public MethodMetaData(Phase phase, ExecutableElement element, List<ControllerParameter> parameters) {
+		public MethodMetaData(Phase phase, ExecutableElement element) {
 			LinkedHashSet<String> parameterNames = new LinkedHashSet<String>();
 			for(VariableElement variableElt : element.getParameters()) {
 				parameterNames.add(variableElt.getSimpleName().toString());
@@ -174,7 +171,6 @@ public class ApplicationProcessor extends ProcessorPlugin {
 			this.phase = phase;
 			this.element = element;
 			this.type = (ExecutableType)element.asType();
-			this.annotationParameters = parameters;
 			this.parameterNames = parameterNames;
 		}
 		
@@ -265,24 +261,14 @@ public class ApplicationProcessor extends ProcessorPlugin {
 				
 				//
 				Phase phase;
-				Binding[] bindings;
 				if(elts == actions) {
-					bindings = executableElt.getAnnotation(Action.class).parameters();
 					phase = Phase.ACTION;
 				} else {
-					bindings = executableElt.getAnnotation(Render.class).parameters();
 					phase = Phase.RENDER;
 				}
 				
 				//
-				List<ControllerParameter> parameters = new ArrayList<ControllerParameter>();
-				for(Binding binding : bindings) {
-					String value = binding.value().isEmpty() ? null : binding.value();
-					parameters.add(new ControllerParameter(binding.name(), value));
-				}
-				
-				//
-				a.methods.add(new MethodMetaData(phase, executableElt, parameters));
+				a.methods.add(new MethodMetaData(phase, executableElt));
 			}
 		}
 		
@@ -356,15 +342,6 @@ public class ApplicationProcessor extends ProcessorPlugin {
 							}
 							writer.append(")");
 							
-							writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
-							for(Iterator<ControllerParameter> j = method.annotationParameters.iterator(); j.hasNext();) {
-								ControllerParameter boundParameter = j.next();
-								String name = "\"" + boundParameter.getName() + "\"";
-								String value = boundParameter.getValue() == null ? "null" : "\"" + boundParameter.getValue() + "\"";
-								writer.append("new ").append(CTRL_PARAM).append("(").append(name).append(", ").append(value).append(")");
-								if(j.hasNext()) writer.append(", ");
-							}
-							writer.append(")");
 							writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
 							for(Iterator<? extends VariableElement> j = method.element.getParameters().iterator(); j.hasNext();) {
 								VariableElement ve = j.next();
@@ -491,15 +468,6 @@ public class ApplicationProcessor extends ProcessorPlugin {
 						}
 						writer.append(")");
 						
-						writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
-						for(Iterator<ControllerParameter> i = method.annotationParameters.iterator(); i.hasNext();) {
-							ControllerParameter boundParameter = i.next();
-							String name = "\"" + boundParameter.getName() + "\"";
-							String value = boundParameter.getValue() == null ? "null" : "\"" + boundParameter.getValue() + "\"";
-							writer.append("new ").append(CTRL_PARAM).append("(").append(name).append(", ").append(value).append(")");
-							if(i.hasNext()) writer.append(", ");
-						}
-						writer.append(")");
 						writer.append(", Arrays.<").append(CTRL_PARAM).append(">asList(");
 						for(Iterator<? extends VariableElement> i = method.element.getParameters().iterator(); i.hasNext();) {
 							VariableElement ve = i.next();

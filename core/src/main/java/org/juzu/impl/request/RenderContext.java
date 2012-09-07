@@ -45,11 +45,9 @@ public final class RenderContext extends RequestContext<RenderBridge> {
 	
 	public URLBuilder createURLBuilder(ControllerMethod method) {
 		URLBuilder builder = bridge.createURLBuilder(method.getPhase());
-		List<ControllerParameter> parameters = method.getAnnotationParameters();
-		for(int i = 0; i < parameters.size(); i++) {
-			ControllerParameter parameter = parameters.get(i);
-			builder.setParameter(parameter.getName(), parameter.getValue());
-		}
+		
+		//
+		builder.setParameter("op", method.getMethodName());
 		
 		//
 		return builder;
@@ -71,7 +69,7 @@ public final class RenderContext extends RequestContext<RenderBridge> {
 	public URLBuilder createURLBuilder(ControllerMethod method, Object[] args) {
 		URLBuilder builder = createURLBuilder(method);
 		
-		//Fill in argument parameters
+		//Fill in argument parameters	
 		for(int i = 0; i < args.length; i++) {
 			if(args[i] != null) {
 				builder.setParameter(method.getArgumentParameters().get(i).getName(), String.valueOf(args[i]));

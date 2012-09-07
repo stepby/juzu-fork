@@ -1,5 +1,5 @@
 <a href="@{action()}">Action</a>
-<a href="@{render()}">Render</a>
+<a href="@{index()}">Render</a>
 <a href="@{foo()}">Foo</a>
 <a href="@{foo(name='bar')}">Foo</a>
 

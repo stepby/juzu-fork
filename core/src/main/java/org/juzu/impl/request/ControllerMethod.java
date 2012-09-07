@@ -36,8 +36,6 @@ public class ControllerMethod {
 	
 	private final Method method;
 	
-	private final List<ControllerParameter> annotationParameters;
-	
 	private final List<ControllerParameter> argumentParameters;
 	
 	public ControllerMethod(
@@ -51,7 +49,6 @@ public class ControllerMethod {
 		this.phase = phase;
 		this.type = type;
 		this.method = method;
-		this.annotationParameters = Tools.safeUnmodifiableList(boundParameters);
 		this.argumentParameters = Tools.safeUnmodifiableList(argumentParameters);
 	}
 	
@@ -69,10 +66,6 @@ public class ControllerMethod {
 	
 	public String getMethodName() {
 		return method.getName();
-	}
-	
-	public List<ControllerParameter> getAnnotationParameters() {
-		return annotationParameters;
 	}
 	
 	public List<ControllerParameter> getArgumentParameters() {
