@@ -118,19 +118,12 @@ public class TemplateProcessor extends ProcessorPlugin {
 					//TODO
 					TemplateGenerator generator = provider.newGenerator(new TemplateGeneratorContext() {
 						
-						public MethodInvocation resolveMethodInvocation(String name, Map<String, String> parameterMap) {
-							/*ApplicationProcessor.MethodMetaData methodMD = application.resolve(name, parameterMap.keySet());
-							List<String> args = new ArrayList<String>();
-							for(VariableElement ve : methodMD.getElement().getParameters()) {
-								String value = parameterMap.get(ve.getSimpleName().toString());
-								args.add(value);
-							}
-							return new MethodInvocation(application.getClassName(), methodMD.getName() + "URL", args);*/
-							ApplicationProcessor.MethodMetaData methodMD = null;
+						public MethodInvocation resolveMethodInvocation(String typeName, String methodName, Map<String, String> parameterMap) {
+							ApplicationProcessor.MethodMetaData methodMD;
 							try {
-								methodMD = application.resolve(name, parameterMap.keySet());
+								methodMD = application.resolve(typeName, methodName, parameterMap.keySet());
 							} catch(AmbiguousResolutionException e) {
-								throw new CompilationException(elt, "Could not resolve method arguments " + name + parameterMap);
+								throw new CompilationException(elt, "Could not resolve method arguments " + methodName + parameterMap);
 							}
 							if(methodMD != null) {
 								List<String> args = new ArrayList<String>();
@@ -138,9 +131,9 @@ public class TemplateProcessor extends ProcessorPlugin {
 									String value = parameterMap.get(ve.getSimpleName().toString());
 									args.add(value);
 								}
-								return new MethodInvocation(application.getClassName(), methodMD.getName() + "URL", args);
+								return new MethodInvocation(methodMD.getController().getClassName() + "_", methodMD.getName() + "URL", args);
 							} else {
-								throw new CompilationException(elt, "Could not resolve method name  " + name + parameterMap);
+								throw new CompilationException(elt, "Could not resolve method name  " + methodName + parameterMap);
 							}
 						}
 					});

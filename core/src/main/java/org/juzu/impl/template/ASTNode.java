@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.juzu.impl.spi.template.TemplateGenerator;
+import org.juzu.impl.utils.Tools;
 import org.juzu.utils.Location;
 
 /**
@@ -69,7 +70,7 @@ public abstract class ASTNode {
 					ctx.end();
 				} else if(block instanceof URL) {
 					URL url = (URL) block;
-					ctx.writer.url(url.name, url.args);
+					ctx.writer.url(url.typeName, url.methodName, url.args);
 				} else {
 					throw new AssertionError();
 				}
@@ -219,24 +220,31 @@ public abstract class ASTNode {
 	
 	public static class URL extends Block {
 		
-		private final String name;
+		private final String typeName;
+		
+		private final String methodName;
 		
 		private final Map<String, String> args;
 		
-		public URL(String name, Map<String, String> args) {
-			this(name, args, 0, 0, new Location(1, 1), new Location(1, 1));
+		public URL(String typeName, String methodName, Map<String, String> args) {
+			this(typeName, methodName, args, 0, 0, new Location(1, 1), new Location(1, 1));
 		}
 
-		public URL(String name, Map<String, String> args, int beginOffset, int endOffset, Location beginPosition, Location endPosition) {
+		public URL(String typeName, String methodName, Map<String, String> args, int beginOffset, int endOffset, Location beginPosition, Location endPosition) {
 			super(beginOffset, endOffset, beginPosition, endPosition);
 			
 			//
-			this.name = name;
+			this.typeName = typeName;
+			this.methodName = methodName;
 			this.args = args;
 		}
+		
+		public String getTypeName() {
+			return typeName;
+		}
 
-		public String getName() {
-			return name;
+		public String getMethodName() {
+			return methodName;
 		}
 
 		public Map<String, String> getArgs() {
@@ -248,13 +256,13 @@ public abstract class ASTNode {
 			if(obj == this) return true;
 			else if (obj instanceof URL) {
 				URL that = (URL) obj;
-				return name.equals(that.name) && args.equals(that.args);
+				return Tools.safeEquals(typeName, that.typeName) && methodName.equals(that.methodName) && args.equals(that.args);
 			} else return false;
 		}
 		
 		@Override
 		public String toString() {
-			return getClass().getSimpleName() + "[name=" + name +", args=" + args + "]";
+			return getClass().getSimpleName() + "[name=" + methodName +", args=" + args + "]";
 		}
 	}
 	

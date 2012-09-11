@@ -26,5 +26,5 @@ import java.util.Map;
  */
 public interface TemplateGeneratorContext {
 
-	MethodInvocation resolveMethodInvocation(String name, Map<String, String> parameterMap);
+	MethodInvocation resolveMethodInvocation(String typeName, String name, Map<String, String> parameterMap);
 }

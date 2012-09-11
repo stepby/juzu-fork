@@ -41,7 +41,6 @@ public class ControllerMethod {
 	public ControllerMethod(
 		Phase phase, Class<?> type, 
 		Method method, 
-		List<ControllerParameter> boundParameters,
 		List<ControllerParameter> argumentParameters) {
 		if(type == null) throw new NullPointerException();
 		if(method == null) throw new NullPointerException();

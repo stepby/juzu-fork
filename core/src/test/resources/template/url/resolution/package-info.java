@@ -1,3 +1,3 @@
 @Application
-package template_url;
+package template.url.resolution;
 import org.juzu.Application;

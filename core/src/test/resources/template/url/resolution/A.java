@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package template_url;
+package template.url.resolution;
 
 import org.juzu.Render;
 import org.juzu.Resource;
@@ -32,12 +32,8 @@ public class A {
 	private Template template;
 	
 	@Render
-	public void foo() {
-		
-	}
+	public void foo() {}
 	
 	@Render
-	public void bar(String s) {
-		
-	}
+	public void bar(String s) {}
 }

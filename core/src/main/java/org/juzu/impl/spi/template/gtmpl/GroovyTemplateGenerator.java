@@ -32,8 +32,6 @@ import javax.tools.StandardLocation;
 import org.juzu.impl.spi.template.MethodInvocation;
 import org.juzu.impl.spi.template.TemplateGenerator;
 import org.juzu.impl.spi.template.TemplateGeneratorContext;
-import org.juzu.impl.template.ASTNode;
-import org.juzu.impl.template.ASTNode.Text;
 import org.juzu.impl.template.SectionType;
 import org.juzu.impl.utils.Tools;
 import org.juzu.utils.Location;
@@ -182,9 +180,9 @@ public class GroovyTemplateGenerator extends TemplateGenerator {
 	}
 	
 	@Override
-	public void url(String name, Map<String, String> args) {
+	public void url(String typeName, String name, Map<String, String> args) {
 		if(context != null) {
-			MethodInvocation mi = context.resolveMethodInvocation(name, args);
+			MethodInvocation mi = context.resolveMethodInvocation(typeName, name, args);
 			out.append(";out.print(");
 			out.append(mi.getClassName());
 			out.append(".");

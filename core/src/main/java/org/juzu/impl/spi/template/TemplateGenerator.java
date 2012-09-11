@@ -49,7 +49,7 @@ public abstract class TemplateGenerator {
 	
 	public abstract void appendLineBreak(SectionType currentType, Location position);
 	
-	public abstract void url(String name, Map<String, String> args);
+	public abstract void url(String typeName, String name, Map<String, String> args);
 	
 	public abstract void generate(Filer filer, String pkgName, String rawName) throws IOException;
 }

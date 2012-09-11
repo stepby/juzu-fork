@@ -58,7 +58,7 @@ public class Sample {
 	
 	@Action
 	public void action() {
-		return org.sample.SampleApplication.foo("bar");
+		return Sample_.foo("bar");
 	}
 	
 	@Render
@@ -82,6 +82,6 @@ public class Sample {
 	@Action
 	public void increment() throws IOException {
 		counter.increment();
-		org.sample.SampleApplication.index();
+		Sample_.index();
 	}
 }

@@ -17,7 +17,6 @@
  */
 package org.juzu.impl.application.simple;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -26,8 +25,8 @@ import java.util.Collections;
 
 import junit.framework.TestCase;
 
+import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.JuzuProcessor;
-import org.juzu.application.PhaseLiteral;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
@@ -67,11 +66,11 @@ public class SimpleApplicationTestCase extends TestCase {
 		ClassLoader cl = new URLClassLoader(new URL[] { out.getURL() }, Thread.currentThread().getContextClassLoader());
 		Class aClass = cl.loadClass("foo.A");
 		Class a_Class = cl.loadClass("foo.A_");
-		Field f = a_Class.getField("render");
-		PhaseLiteral l = (PhaseLiteral)f.get(null);
-		assertNotNull(l);
+		Class applicationClass = cl.loadClass("foo.FooApplication");
+		ApplicationDescriptor desc = (ApplicationDescriptor)applicationClass.getDeclaredField("DESCRIPTOR").get(null);
 		
-		ControllerMethod d = l.getDescriptor();
+		//
+		ControllerMethod d = desc.getControllerMethod(aClass, "render", String.class);
 		assertSame(aClass, d.getType());
 		assertEquals("render", d.getMethodName());
 		Method method = d.getMethod();
@@ -80,8 +79,8 @@ public class SimpleApplicationTestCase extends TestCase {
 		assertEquals(Arrays.<Class<?>>asList(String.class), Arrays.asList(method.getParameterTypes()));
 		assertEquals(Arrays.asList(new ControllerParameter("name")), d.getArgumentParameters());
 		
-		Class applicationClass = cl.loadClass("foo.FooApplication");
-		Method renderMethod = applicationClass.getDeclaredMethod("renderURL", String.class);
+		//
+		Method renderMethod = a_Class.getMethod("renderURL", String.class);
 		assertEquals("renderURL", renderMethod.getName());
 	}
 }

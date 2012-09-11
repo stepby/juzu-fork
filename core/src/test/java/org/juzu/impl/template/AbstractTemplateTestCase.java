@@ -43,13 +43,13 @@ public abstract class AbstractTemplateTestCase extends AbstractTestCase {
 	public GroovyTemplate template(String text) {
 		ASTBuilder parser = new ASTBuilder();
 		GroovyTemplateGenerator templateWriter = new GroovyTemplateGenerator(new TemplateGeneratorContext() {
-			public MethodInvocation resolveMethodInvocation(String name, Map<String, String> parameterMap) {
+			public MethodInvocation resolveMethodInvocation(String typeName, String methodName, Map<String, String> parameterMap) {
 				if(parameterMap.size() > 0) {
 					throw failure("Unexpected non empty parameter map");
 				}
 				Class clazz = AbstractTemplateTestCase.this.getClass();
 				try {
-					Method m = clazz.getMethod(name);
+					Method m = clazz.getMethod(methodName);
 					return new MethodInvocation(clazz.getName(), m.getName(), Collections.<String>emptyList());
 				} catch(NoSuchMethodException e) {
 					throw failure(e);

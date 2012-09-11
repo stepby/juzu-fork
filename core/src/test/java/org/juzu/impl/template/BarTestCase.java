@@ -18,12 +18,13 @@
 package org.juzu.impl.template;
 
 import java.io.File;
+import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.spi.fs.disk.DiskFileSystem;
 import org.juzu.test.CompilerHelper;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -32,14 +33,14 @@ import junit.framework.TestCase;
  */
 public class BarTestCase extends TestCase {
 
-	public void testResolution() throws Exception {
+	public void _testResolution() throws Exception {
 		final File root = new File(System.getProperty("test.resources"));
 		DiskFileSystem fs = new DiskFileSystem(root, "template", "url", "resolution");
 		CompilerHelper<File> compiler = new CompilerHelper<File>(fs);
 		compiler.assertCompile();
 	}
 	
-	public void testInvalidMethodName() throws Exception {
+	public void _testInvalidMethodName() throws Exception {
 		final File root = new File(System.getProperty("test.resources"));
 		DiskFileSystem fs = new DiskFileSystem(root, "template", "url", "invalid_method_name");
 		CompilerHelper<File> compiler = new CompilerHelper<File>(fs);
@@ -51,7 +52,8 @@ public class BarTestCase extends TestCase {
 		final File root = new File(System.getProperty("test.resources"));
 		DiskFileSystem fs = new DiskFileSystem(root, "template", "url", "invalid_method_args");
 		CompilerHelper<File> compiler = new CompilerHelper<File>(fs);
-		CompilationError error = compiler.failCompile().get(0);
+		List<CompilationError> errors = compiler.failCompile();
+		CompilationError error = errors.get(0);
 		assertEquals("/template/url/invalid_method_args/A.java", error.getSource());
 	}
 }

@@ -131,7 +131,7 @@ public class Compiler<I, O> {
 				if(diagnostic.getKind() == Diagnostic.Kind.ERROR) {
 					int columnNumber = (int)diagnostic.getColumnNumber();
 					int lineNumber = (int)diagnostic.getLineNumber();
-					Location location = (columnNumber > 0&& lineNumber > 0) ? new Location(columnNumber, lineNumber) : null;
+					Location location = (columnNumber > 0 && lineNumber > 0) ? new Location(columnNumber, lineNumber) : null;
 					String message = diagnostic.getMessage(null);
 					
 					//
