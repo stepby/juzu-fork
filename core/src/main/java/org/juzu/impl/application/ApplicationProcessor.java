@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
@@ -86,14 +88,17 @@ public class ApplicationProcessor extends ProcessorPlugin {
 		
 		private final String packageName;
 		
+		private final String defaultController;
+		
 		private final List<ControllerMetaData> controllers;
 		
-		ApplicationMetaData(PackageElement packageElt, String applicationName) {
+		ApplicationMetaData(PackageElement packageElt, String applicationName, String defaultController) {
 			String packageName = packageElt.getQualifiedName().toString();
 			
 			this.packageElt = packageElt;
 			this.className = packageName + "." + applicationName;
 			this.name = applicationName;
+			this.defaultController = defaultController;
 			this.packageName = packageName;
 			this.prefix = packageName + ".";
 			this.controllers = new ArrayList<ControllerMetaData>();
@@ -156,6 +161,8 @@ public class ApplicationProcessor extends ProcessorPlugin {
 	
 	public static class MethodMetaData {
 		
+		private final String id;
+		
 		private final ControllerMetaData controller;
 		
 		private final Phase phase;
@@ -166,17 +173,22 @@ public class ApplicationProcessor extends ProcessorPlugin {
 		
 		private final LinkedHashSet<String> parameterNames;
 		
-		public MethodMetaData(ControllerMetaData controller, Phase phase, ExecutableElement element) {
+		public MethodMetaData(ControllerMetaData controller, String id, Phase phase, ExecutableElement element) {
 			LinkedHashSet<String> parameterNames = new LinkedHashSet<String>();
 			for(VariableElement variableElt : element.getParameters()) {
 				parameterNames.add(variableElt.getSimpleName().toString());
 			}
 			
+			this.id = id;
 			this.controller = controller;
 			this.phase = phase;
 			this.element = element;
 			this.type = (ExecutableType)element.asType();
 			this.parameterNames = parameterNames;
+		}
+		
+		public String getId() {
+			return id;
 		}
 		
 		public ControllerMetaData getController() {
@@ -200,6 +212,8 @@ public class ApplicationProcessor extends ProcessorPlugin {
 	
 	private PackageMap<ApplicationMetaData> applications = new PackageMap<ApplicationMetaData>();
 	
+	private int methodCount = 0;
+	
 	public ApplicationMetaData getApplication(PackageElement element) {
 		return applications.resolveValue(element.getQualifiedName().toString());
 	}
@@ -217,9 +231,24 @@ public class ApplicationProcessor extends ProcessorPlugin {
 				throw new UnsupportedOperationException("handle me gracefully");
 			}
 			
-			//
-			Application applicationAnn = elt.getAnnotation(Application.class);
-			String name = applicationAnn.name();
+			//Get data from Application annotation, the hard way
+			String name = "";
+			String defaultController = Object.class.getName();
+			for(AnnotationMirror am : elt.getAnnotationMirrors()) {
+				TypeElement te = (TypeElement)am.getAnnotationType().asElement();
+				if(te.getQualifiedName().toString().equals(Application.class.getName())) {
+					for(Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : am.getElementValues().entrySet()) {
+						String m = entry.getKey().getSimpleName().toString();
+						Object value = entry.getValue().getValue();
+						if("name".equals(m)) {
+							name = (String)value;
+						} else if("defaultController".equals(m)) {
+							defaultController = value.toString();
+						}
+					}
+				}
+			}
+			
 			if(name.isEmpty()) {
 				name = packageElt.getSimpleName().toString();
 				if(name.isEmpty()) {
@@ -229,7 +258,7 @@ public class ApplicationProcessor extends ProcessorPlugin {
 				}
 				
 				//
-				ApplicationMetaData application = new ApplicationMetaData(packageElt, name);
+				ApplicationMetaData application = new ApplicationMetaData(packageElt, name, defaultController);
 				applications.putValue(packageName, application);
 				found.add(application);
 			}
@@ -277,13 +306,13 @@ public class ApplicationProcessor extends ProcessorPlugin {
 				}
 				
 				//
-				a.methods.add(new MethodMetaData(a, phase, executableElt));
+				a.methods.add(new MethodMetaData(a, "method_" + methodCount++, phase, executableElt));
 			}
 		}
 		
 		//Generate applications
-		for(int i = 0; i < found.size(); i++) 	{
-			ApplicationMetaData foo = found.get(i);
+		for(ApplicationMetaData foo : found) 	{
+			
 			try {
 				JavaFileObject jfo = createSourceFile(foo.className, foo.packageElt);
 				Writer writer = jfo.openWriter();
@@ -312,9 +341,6 @@ public class ApplicationProcessor extends ProcessorPlugin {
 					writer.append("public class ").append(foo.name).append(" {\n");
 					
 					//
-					int index = 0;
-					
-					//
 					for(ControllerMetaData controller : foo.controllers) {
 						//
 						PackageElement fooElt = this.getPackageOf(controller.typeElt);
@@ -341,13 +367,11 @@ public class ApplicationProcessor extends ProcessorPlugin {
 								String controllerFQN = controller.typeElt.getQualifiedName().toString();
 
 								//Method
-								writer.append("public static final ").append(CTRL_METHOD).append(" method_")
-								.append(String.valueOf(index)).append(" = ");
+								writer.append("public static final ").append(CTRL_METHOD).append(" ").append(method.id).append(" = ");
 								writer.append("new ").append(CTRL_METHOD).append("(");
-								writer.append(PHASE).append(".").append(method.phase.name());
-								writer.append(",");
-								writer.append(controllerFQN).append(".class");
-								writer.append(',');
+								writer.append("\"").append(method.id).append("\",");
+								writer.append(PHASE).append(".").append(method.phase.name()).append(",");
+								writer.append(controllerFQN).append(".class").append(',');
 								writer.append(TOOLS).append(".safeGetMethod(").append(controllerFQN).append(".class,\"").append(method.getName()).append("\"");
 								for(TypeMirror foobar : method.type.getParameterTypes()) {
 									TypeMirror earsed = erasure(foobar);
@@ -376,8 +400,7 @@ public class ApplicationProcessor extends ProcessorPlugin {
 										VariableElement argDecl = argDecls.get(j);
 										writer2.append(argumentType.toString()).append(" ").append(argDecl.getSimpleName().toString());
 									}
-									writer2.append(") { return ((ActionContext)ApplicationContext.getCurrentRequest()).createResponse(").append(foo.name).append(".method_");
-									writer2.append(Integer.toString(index));
+									writer2.append(") { return ((ActionContext)ApplicationContext.getCurrentRequest()).createResponse(").append(foo.name).append(".").append(method.id);
 									switch (argDecls.size())
 									{
 										case 0 :
@@ -407,8 +430,7 @@ public class ApplicationProcessor extends ProcessorPlugin {
 									writer2.append(argumentType.toString()).append(" ").append(argumentElement.getSimpleName().toString());
 								}
 
-								writer2.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(").append(foo.name).append(".method_");
-								writer2.append(Integer.toString(index));
+								writer2.append(") { return ((RenderContext)ApplicationContext.getCurrentRequest()).createURLBuilder(").append(foo.name).append(".").append(method.id);
 								switch(argDecls.size()) {
 									case 0: break;
 									case 1:
@@ -424,9 +446,6 @@ public class ApplicationProcessor extends ProcessorPlugin {
 										break;
 								}
 								writer2.append("); }\n");
-
-								//
-								index++;
 							}
 							
 							//
@@ -442,15 +461,16 @@ public class ApplicationProcessor extends ProcessorPlugin {
 					writer.append(" DESCRIPTOR = new ").append(ApplicationDescriptor.class.getSimpleName()).append("(");
 					writer.append("\"").append(foo.packageName).append("\",");
 					writer.append("\"").append(foo.name).append("\",");
+					writer.append(foo.defaultController).append(".class, ");
 					writer.append("\"").append(templatesPackageName).append("\",");
 					writer.append("Arrays.<").append(CTRL_METHOD).append(">asList(");
-					index = 0;
+					int index = 0;
 					for(ControllerMetaData bar : foo.controllers) {
 						for(MethodMetaData method : bar.methods) {
 							if(index > 0) {
 								writer.append(',');
 							}
-							writer.append("method_").append(Integer.toString(index));
+							writer.append(method.id);
 							index++;
 						}
 					}

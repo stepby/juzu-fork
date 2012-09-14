@@ -15,35 +15,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu;
+package application.resolver.ambiguous_method;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.juzu.Render;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Declares an application
  */
+public class A
+{
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PACKAGE)
-public @interface Application {
-	
-	/**
-	 * Returns an application optional name
-	 * 
-	 * @return the application name
-	 */
-	String name() default "";
-	
-	/**
-	 * Returns an optional default controller class
-	 * 
-	 * @return the default controller
-	 */
-	Class<?> defaultController() default Object.class;
+	@Render
+	public void index() {
+		
+	}
 }

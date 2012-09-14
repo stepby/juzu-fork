@@ -47,7 +47,7 @@ public final class RenderContext extends RequestContext<RenderBridge> {
 		URLBuilder builder = bridge.createURLBuilder(method.getPhase());
 		
 		//
-		builder.setParameter("op", method.getMethodName());
+		builder.setParameter("op", method.getName());
 		
 		//
 		return builder;

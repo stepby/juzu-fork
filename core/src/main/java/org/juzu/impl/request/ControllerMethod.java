@@ -30,6 +30,8 @@ import org.juzu.impl.utils.Tools;
  */
 public class ControllerMethod {
 
+	private final String id;
+	
 	private final Phase phase;
 	
 	private final Class<?> type;
@@ -39,16 +41,22 @@ public class ControllerMethod {
 	private final List<ControllerParameter> argumentParameters;
 	
 	public ControllerMethod(
+		String id,
 		Phase phase, Class<?> type, 
 		Method method, 
 		List<ControllerParameter> argumentParameters) {
 		if(type == null) throw new NullPointerException();
 		if(method == null) throw new NullPointerException();
 		
+		this.id = id;
 		this.phase = phase;
 		this.type = type;
 		this.method = method;
 		this.argumentParameters = Tools.safeUnmodifiableList(argumentParameters);
+	}
+	
+	public String getId() {
+		return id;
 	}
 	
 	public Phase getPhase() {
@@ -63,7 +71,7 @@ public class ControllerMethod {
 		return method;
 	}
 	
-	public String getMethodName() {
+	public String getName() {
 		return method.getName();
 	}
 	

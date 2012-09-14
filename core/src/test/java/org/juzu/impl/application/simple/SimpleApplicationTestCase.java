@@ -72,7 +72,7 @@ public class SimpleApplicationTestCase extends TestCase {
 		//
 		ControllerMethod d = desc.getControllerMethod(aClass, "render", String.class);
 		assertSame(aClass, d.getType());
-		assertEquals("render", d.getMethodName());
+		assertEquals("render", d.getName());
 		Method method = d.getMethod();
 		assertEquals("render", method.getName());
 		assertSame(aClass, method.getDeclaringClass());

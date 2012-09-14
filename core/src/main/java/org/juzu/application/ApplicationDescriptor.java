@@ -29,6 +29,8 @@ import org.juzu.impl.request.ControllerMethod;
  *
  */
 public class ApplicationDescriptor {
+	
+	private final Class<?> defaultController;
 
 	private final String packageName;
 	
@@ -41,13 +43,19 @@ public class ApplicationDescriptor {
 	public ApplicationDescriptor(
 		String packageName, 
 		String name, 
+		Class<?> defaultController,
 		String templatesPackageName, 
 		List<ControllerMethod> controllerMethods) {
 		
 		this.packageName = packageName;
 		this.name = name;
+		this.defaultController = defaultController;
 		this.templatesPackageName = templatesPackageName;
 		this.controllerMethods = Collections.unmodifiableList(controllerMethods);
+	}
+	
+	public Class<?> getDefaultController() {
+		return defaultController;
 	}
 
 	public String getPackageName() {

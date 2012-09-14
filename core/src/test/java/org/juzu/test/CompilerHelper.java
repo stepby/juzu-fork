@@ -26,36 +26,45 @@ import java.util.List;
 import org.juzu.application.JuzuProcessor;
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
+import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ReadFileSystem;
+import org.juzu.impl.spi.fs.ReadWriteFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
+import org.juzu.impl.utils.Content;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class CompilerHelper<S> {
+public class CompilerHelper<I> {
 
-	private ReadFileSystem<S> in;
+	private ReadFileSystem<I> in;
 	
 	private RAMFileSystem out;
 	
 	private ClassLoader cl;
 	
-	public CompilerHelper(ReadFileSystem<S> in) {
+	private Compiler<I, RAMPath> compiler;
+	
+	public CompilerHelper(ReadFileSystem<I> in) {
 		try {
 			this.in = in;
 			this.out = new RAMFileSystem();
+			compiler = new Compiler<I, RAMPath>(in, out);
+			compiler.addAnnotationProcessor(new JuzuProcessor());
 		} catch(IOException e) {
 			throw AbstractTestCase.failure(e);
 		}
 	}
 	
+	public Compiler getCompiler() {
+		return compiler;
+	}
+	
 	public List<CompilationError> failCompile() {
 		try {
-			Compiler<S, RAMPath> compiler = new Compiler<S, RAMPath>(in, out);
-			compiler.addAnnotationProcessor(new JuzuProcessor());
 			List<CompilationError> errors = compiler.compile();
 			AbstractTestCase.assertTrue("Was expecting compilation to fail", errors.size() > 0);
 			return errors;
@@ -66,7 +75,7 @@ public class CompilerHelper<S> {
 	
 	public void assertCompile() {
 		try {
-			Compiler<S, RAMPath> compiler = new Compiler<S, RAMPath>(in, out);
+			Compiler<I, RAMPath> compiler = new Compiler<I, RAMPath>(in, out);
 			compiler.addAnnotationProcessor(new JuzuProcessor());
 			AbstractTestCase.assertEquals(Collections.emptyList(), compiler.compile());
 			cl = new URLClassLoader(new URL[] { out.getURL() }, Thread.currentThread().getContextClassLoader());

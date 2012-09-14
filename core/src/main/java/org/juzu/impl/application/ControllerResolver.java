@@ -38,71 +38,41 @@ public class ControllerResolver {
 
 	private final List<ControllerMethod> methods;
 	
+	private final ApplicationDescriptor desc;
+	
 	public ControllerResolver(ApplicationDescriptor desc) throws NullPointerException {
 		if(desc == null) throw new NullPointerException("No null application descriptor accepted");
 		
 		//
+		this.desc = desc;
 		this.methods = desc.getControllerMethods();
 	}
 	
-	public ControllerResolver(ControllerMethod ... methods) {
-		this.methods = Tools.safeUnmodifiableList(methods);
-	}
-	
-	private static class Match {
-		private final ControllerMethod method;
-		
-		private final int score;
-		
-		public Match(ControllerMethod method, int score) {
-			this.method = method;
-			this.score = score;
-		}
-	}
-	
 	public ControllerMethod resolve(Phase phase, Map<String, String[]> parameters) throws AmbiguousResolutionException {
-		String methodName;
+		ControllerMethod found = null;
 		String[] op = parameters.get("op");
 		if(op != null && op.length > 0) {
-			methodName = op[0];
-		} else {
-			methodName = "index";
-		}
-		
-		//
-		TreeMap<Integer, List<Match>> matches = new TreeMap<Integer, List<Match>>();
-		out:
-		for(ControllerMethod method : methods) {
-			if(method.getPhase() == phase && methodName.equals(method.getMethodName())) {
-				int score = 0;
-				List<List<ControllerParameter>> listList = new  ArrayList<List<ControllerParameter>>();
-				listList.add(method.getArgumentParameters());
-				for(List<ControllerParameter> list : listList) {
-					for(ControllerParameter cp : list) {
-						String[] val = parameters.get(cp.getName());
-						if(val == null || val.length ==0 || (cp.getValue() != null && !cp.getValue().equals(val[0]))) {
-							continue out;
-						}
-						score += cp.getValue() == null ? 1 : 2;
+			for(ControllerMethod method : methods) {
+				if(method.getId().equals(op[0])) {
+					found = method;
+					break;
+				}
+			}
+		} else if(phase == Phase.RENDER) {
+			for(ControllerMethod method : methods) {
+				if(method.getPhase() == Phase.RENDER &&
+					 method.getName().equals("index") &&
+					 method.getArgumentParameters().isEmpty()) {
+					if(desc.getDefaultController() == method.getType()) {
+						return method;
+					} else if(found == null) {
+						found = method;
+					} else {
+						throw new AmbiguousResolutionException();
 					}
 				}
-				List<Match> scoreMatches = matches.get(score);
-				if(scoreMatches == null) {
-					matches.put(score, scoreMatches = new ArrayList<Match>());
-				}
-				scoreMatches.add(new Match(method, score));
 			}
 		}
-		
-		//Return the best match
-		Map.Entry<Integer, List<Match>> a = matches.lastEntry();
-		if(a != null) {
-			List<Match> b = a.getValue();
-			if(b.size() > 1) throw new AmbiguousResolutionException("Could not resolve resolution");
-			return b.get(0).method;
-		}
-		
-		//
-		return null;
+		return found;
 	}
 }

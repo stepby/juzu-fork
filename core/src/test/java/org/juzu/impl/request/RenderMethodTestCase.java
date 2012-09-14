@@ -56,13 +56,13 @@ public class RenderMethodTestCase extends TestCase {
 	
 	public void testNoArg() throws Exception {
 		ControllerMethod cm = descriptor.getControllerMethod(aClass, "noArg");
-		assertEquals("noArg", cm.getMethodName());
+		assertEquals("noArg", cm.getName());
 		assertEquals(Collections.emptyList(), cm.getArgumentParameters());
 	}
 	
 	public void testStringArg() throws Exception {
 		ControllerMethod cm = descriptor.getControllerMethod(aClass, "oneArg", String.class);
-		assertEquals("oneArg", cm.getMethodName());
+		assertEquals("oneArg", cm.getName());
 		assertEquals(Arrays.asList(new ControllerParameter("foo")), cm.getArgumentParameters());
 	}
 }
