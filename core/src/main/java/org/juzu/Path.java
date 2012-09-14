@@ -26,6 +26,6 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Resource {
+public @interface Path {
 	String value();
 }

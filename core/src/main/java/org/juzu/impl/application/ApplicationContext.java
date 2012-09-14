@@ -29,7 +29,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Singleton;
 
 import org.juzu.RenderScoped;
-import org.juzu.Resource;
+import org.juzu.Path;
 import org.juzu.Response;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.impl.cdi.Export;
@@ -148,7 +148,7 @@ public class ApplicationContext {
 	@Produces
 	public Template getRenderer(InjectionPoint point) {
 		Bean<?> bean = point.getBean();
-		Resource template = point.getAnnotated().getAnnotation(Resource.class);
+		Path template = point.getAnnotated().getAnnotation(Path.class);
 		StringBuilder id = new StringBuilder(descriptor.getTemplatesPackageName());
 		if(id.length() > 0)  id.append('.');
 		id.append(template.value(), 0, template.value().indexOf('.'));

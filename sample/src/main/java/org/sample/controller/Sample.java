@@ -26,8 +26,8 @@ import javax.inject.Inject;
 
 import org.juzu.Action;
 import org.juzu.Binding;
+import org.juzu.Path;
 import org.juzu.Render;
-import org.juzu.Resource;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.PhaseLiteral;
 import org.juzu.template.Template;
@@ -46,7 +46,7 @@ public class Sample {
 		ApplicationDescriptor desc = org.sample.SampleApplication.DESCRIPTOR;
 	}
 	
-	@Inject @Resource("MyTemplate.gtmpl")
+	@Inject @Path("MyTemplate.gtmpl")
 	private Template template;
 	
 	@Inject

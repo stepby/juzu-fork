@@ -58,7 +58,7 @@ public class TemplateProcessorTestCase extends TestCase {
 				"public class A {\n" +
 				"@Render\n" +
 				"public void index() {}\n" +
-				"//@org.juzu.Resource(\"B.gtmpl\") org.juzu.template.Template template;\n" +
+				"//@org.juzu.Path(\"B.gtmpl\") org.juzu.template.Template template;\n" +
 				"}");
 		//templates.addFile("B.gtmpl").update("<% out.print('hello') %>");
 		
