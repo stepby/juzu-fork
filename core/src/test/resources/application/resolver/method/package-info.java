@@ -1,4 +1,4 @@
 @Application
-package controller2;
+package application.resolver.method;
 
 import org.juzu.Application;

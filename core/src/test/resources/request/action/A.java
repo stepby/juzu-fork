@@ -1,4 +1,4 @@
-package controller2;
+package request.action;
 
 import org.juzu.Action;
 

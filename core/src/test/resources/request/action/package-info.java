@@ -1,4 +1,4 @@
 @Application
-package controller1;
+package request.action;
 
 import org.juzu.Application;

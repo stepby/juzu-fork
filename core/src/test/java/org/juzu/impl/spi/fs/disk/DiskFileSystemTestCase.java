@@ -38,12 +38,11 @@ public class DiskFileSystemTestCase extends TestCase {
 		File root = new File(System.getProperty("test.resources"));
 		assertNotNull(root);
 		assertTrue(root.isDirectory());
-		doTest(new DiskFileSystem(root, "org"), root);
+		doTest(new DiskFileSystem(root, "compiler", "disk"), root);
 	}
 	
 	private <P> void doTest(ReadFileSystem<P> fs, P root) throws IOException {
 		assertEquals(root, fs.getRoot());
-		
 		assertTrue(fs.isDir(root));
 		assertFalse(fs.isFile(root));
 		assertEquals("", fs.getName(root));
@@ -51,29 +50,29 @@ public class DiskFileSystemTestCase extends TestCase {
 
 		Iterator<P> rootChildren = fs.getChildren(root);
 		assertTrue(rootChildren.hasNext());
-		P org = rootChildren.next();
+		P compiler = rootChildren.next();
 		assertFalse(rootChildren.hasNext());
-		assertTrue(fs.isDir(org));
-		assertFalse(fs.isFile(org));
-		assertEquals("org", fs.getName(org));
-		assertEquals(root, fs.getParent(org));
+		assertTrue(fs.isDir(compiler));
+		assertFalse(fs.isFile(compiler));
+		assertEquals("compiler", fs.getName(compiler));
+		assertEquals(root, fs.getParent(compiler));
 		
-		Iterator<P> orgChildren = fs.getChildren(org);
+		Iterator<P> orgChildren = fs.getChildren(compiler);
 		assertTrue(orgChildren.hasNext());
-		P juzu = orgChildren.next();
+		P disk = orgChildren.next();
 		assertFalse(orgChildren.hasNext());
-		assertTrue(fs.isDir(juzu));
-		assertFalse(fs.isFile(juzu));
-		assertEquals("juzu", fs.getName(juzu));
-		assertEquals(org, fs.getParent(juzu));
+		assertTrue(fs.isDir(disk));
+		assertFalse(fs.isFile(disk));
+		assertEquals("disk", fs.getName(disk));
+		assertEquals(compiler, fs.getParent(disk));
 		
-		Iterator<P> juzuChildren = fs.getChildren(juzu);
+		Iterator<P> juzuChildren = fs.getChildren(disk);
 		assertTrue(juzuChildren.hasNext());
 		P a = juzuChildren.next();
 		assertFalse(juzuChildren.hasNext());
 		assertFalse(fs.isDir(a));
 		assertTrue(fs.isFile(a));
 		assertEquals("A.java", fs.getName(a));
-		assertEquals(juzu, fs.getParent(a));
+		assertEquals(disk, fs.getParent(a));
 	}
 }

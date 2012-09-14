@@ -1,4 +1,4 @@
 @Application
-package controller_resolver;
+package request.render;
 
 import org.juzu.Application;
