@@ -17,6 +17,7 @@
  */
 package org.juzu.impl.application;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,7 +107,17 @@ public class ApplicationContext {
 	
 	private Object doInvoke(RequestContext context) {
 		ControllerMethod method = resolver.resolve(context.getPhase(), context.getParameters());
-		if(method == null) throw new UnsupportedOperationException("handle me gracefully: no method could be resolved");
+		if(method == null) {
+			StringBuilder sb = new StringBuilder("handle me gracefully: no method could be resolved for phase " + context.getPhase() + 
+				"and parameters={");
+			int index = 0;
+			for(Map.Entry<String, String[]> entry : ((Map<String, String[]>)context.getParameters()).entrySet()) {
+				if(index++ > 0) sb.append(',');
+				sb.append(entry.getKey()).append('=').append(Arrays.asList(entry.getValue()));
+			}
+			sb.append("}");
+			throw new UnsupportedOperationException(sb.toString());
+		}
 		else {
 			Class<?> type = method.getType();
 			BeanManager mgr = container.getManager();
@@ -124,7 +135,7 @@ public class ApplicationContext {
 					for(int i = 0; i < args.length; i++) {
 						Map<String, String[]> map = context.getParameters();
 						String[] values = map.get(params.get(i).getName());
-						args[i] = values[0];
+						args[i] = (values != null && values.length > 0) ? values[0] : null;
 					}
 					
 					return method.getMethod().invoke(o, args);

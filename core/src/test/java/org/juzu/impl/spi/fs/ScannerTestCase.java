@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.juzu.impl.spi.fs.ram.RAMFile;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
+import org.juzu.test.AbstractTestCase;
 
 import junit.framework.TestCase;
 
@@ -30,7 +31,7 @@ import junit.framework.TestCase;
  * @version $Id$
  *
  */
-public class ScannerTestCase extends TestCase {
+public class ScannerTestCase extends AbstractTestCase {
 
 	public void testFoo() throws Exception {
 		RAMFileSystem fs = new RAMFileSystem();
@@ -44,14 +45,17 @@ public class ScannerTestCase extends TestCase {
 		assertEquals(Collections.<String, Change>emptyMap(), scanner.scan());
 		
 		RAMFile bar = fs.addFile(foo, "bar.txt");
+		waitForOneMillis();
 		assertEquals(Collections.singletonMap("foo/bar.txt", Change.ADD), scanner.scan());
 		assertEquals(Collections.<String, Change>emptyMap(), scanner.scan());
 		
 		bar.update("abc");
+		waitForOneMillis();
 		assertEquals(Collections.singletonMap("foo/bar.txt", Change.UPDATE), scanner.scan());
 		assertEquals(Collections.<String, Change>emptyMap(), scanner.scan());
 		
 		bar.remove();
+		waitForOneMillis();
 		assertEquals(Collections.singletonMap("foo/bar.txt", Change.REMOVE), scanner.scan());
 		assertEquals(Collections.<String, Change>emptyMap(), scanner.scan());
 	}
