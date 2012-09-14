@@ -26,9 +26,9 @@ import org.juzu.application.Phase;
  * @version $Id$
  *
  */
-public final class RenderContext extends MimeContext<RenderBridge>
+public class ResourceContext extends MimeContext<ResourceBridge>
 {
-   public RenderContext(ClassLoader classLoader, RenderBridge bridge)
+   public ResourceContext(ClassLoader classLoader, ResourceBridge bridge)
    {
 	   super(classLoader, bridge);
    }
@@ -36,9 +36,8 @@ public final class RenderContext extends MimeContext<RenderBridge>
    @Override
    public Phase getPhase()
    {
-	   return Phase.RENDER;
+	   return Phase.RESOURCE;
    }
-
 
    @Override
    public Map<Object, Object> getContext(Scope scope)
@@ -48,6 +47,7 @@ public final class RenderContext extends MimeContext<RenderBridge>
 			case FLASH :
 				return bridge.getFlashContext();
 			case MIME:
+				return bridge.getRequestContext();
 			case RENDER:
 			case REQUEST:
 				return bridge.getRequestContext();
@@ -63,5 +63,4 @@ public final class RenderContext extends MimeContext<RenderBridge>
 				throw new AssertionError();
 		}
    }
-
 }

@@ -39,7 +39,7 @@ public final class ActionContext extends RequestContext<ActionBridge> {
 	}
 	
 	public void map(Response response, ControllerMethod method) {
-		response.setParameter("op", method.getName());
+		response.setParameter("op", method.getId());
 	}
 	
 	public Response createResponse() {
@@ -81,6 +81,9 @@ public final class ActionContext extends RequestContext<ActionBridge> {
 			case FLASH :
 				return bridge.getFlashContext();
 			case RENDER:
+			case RESOURCE:
+			case MIME:
+				return null;
 			case REQUEST:
 				return bridge.getRequestContext();
 			case ACTION:

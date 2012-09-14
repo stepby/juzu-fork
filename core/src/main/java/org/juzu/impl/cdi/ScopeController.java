@@ -18,7 +18,6 @@
 package org.juzu.impl.cdi;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.enterprise.context.ContextNotActiveException;
@@ -28,8 +27,9 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
 import org.juzu.ActionScoped;
+import org.juzu.MimeScoped;
 import org.juzu.RenderScoped;
-import org.juzu.application.Phase;
+import org.juzu.ResourceScoped;
 import org.juzu.impl.request.RequestContext;
 import org.juzu.impl.request.Scope;
 
@@ -47,6 +47,10 @@ public class ScopeController {
 	final ContextImpl requestContext = new ContextImpl(this, Scope.REQUEST, RequestScoped.class);
 	
 	final ContextImpl renderContext = new ContextImpl(this, Scope.RENDER, RenderScoped.class);
+	
+	final ContextImpl resourceContext = new ContextImpl(this, Scope.RESOURCE, ResourceScoped.class);
+	
+	final ContextImpl mimeContext = new ContextImpl(this, Scope.MIME, MimeScoped.class);
 	
 	final ContextImpl actionContext = new ContextImpl(this, Scope.ACTION, ActionScoped.class);
 	

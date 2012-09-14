@@ -41,6 +41,9 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
+import javax.portlet.ResourceServingPortlet;
 
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.JuzuProcessor;
@@ -50,6 +53,7 @@ import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
 import org.juzu.impl.request.ActionContext;
 import org.juzu.impl.request.RenderContext;
+import org.juzu.impl.request.ResourceContext;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.impl.spi.cdi.weld.WeldContainer;
 import org.juzu.impl.spi.fs.Change;
@@ -66,7 +70,7 @@ import org.juzu.impl.utils.DevClassLoader;
  * @version $Id$
  *
  */
-public class JuzuPortlet implements Portlet {
+public class JuzuPortlet implements Portlet, ResourceServingPortlet {
 	
 	private ApplicationContext applicationContext;
 	
@@ -224,6 +228,40 @@ public class JuzuPortlet implements Portlet {
 			response.getWriter().print(sb.toString());
 		}
 	}
+	
+	/**
+    * @see javax.portlet.ResourceServingPortlet#serveResource(javax.portlet.ResourceRequest, javax.portlet.ResourceResponse)
+    */
+   public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException
+   {
+	   Collection<CompilationError> errors = boot();
+	   
+	   //
+	   if(errors.isEmpty()) {
+	   	ResourceContext resourceContext = new ResourceContext(classLoader, new PortletResourceBridge(request, response));
+	   	applicationContext.invoke(resourceContext);
+	   } else {
+//			Element elt	 = response.createElement("link");
+//			elt.setAttribute("rel", "stylesheet");
+//			elt.setAttribute("href", "http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css");
+//			response.addProperty(MimeResponse.MARKUP_HEAD_ELEMENT, elt);
+			
+			//Basic error reporting for now
+			StringBuilder sb = new StringBuilder();
+			for(CompilationError error : errors) {
+				String at = error.getSource();
+				
+				//
+				sb.append("<p>");
+				sb.append("<div>Compilation error at ").append(at).append(" ").append(error.getLocation()).append("</div>");
+				sb.append("<div>");
+				sb.append(error.getMessage());
+				sb.append("</div>");
+				sb.append("</p>");
+			}
+			response.getWriter().print(sb.toString());
+	   }
+   }
 
 	public void destroy() {
 		

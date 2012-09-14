@@ -30,6 +30,10 @@ public enum Scope
 	
 	REQUEST,
 	
+	MIME,
+	
+	RESOURCE,
+	
 	SESSION,
 	
 	FLASH,

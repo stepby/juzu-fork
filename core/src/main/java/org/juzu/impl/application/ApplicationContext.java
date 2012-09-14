@@ -28,17 +28,18 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Singleton;
 
-import org.juzu.RenderScoped;
 import org.juzu.Path;
-import org.juzu.Response;
+import org.juzu.RenderScoped;
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.impl.cdi.Export;
 import org.juzu.impl.cdi.ScopeController;
 import org.juzu.impl.request.ActionContext;
 import org.juzu.impl.request.ControllerMethod;
 import org.juzu.impl.request.ControllerParameter;
+import org.juzu.impl.request.MimeContext;
 import org.juzu.impl.request.RenderContext;
 import org.juzu.impl.request.RequestContext;
+import org.juzu.impl.request.ResourceContext;
 import org.juzu.impl.spi.cdi.Container;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
@@ -63,8 +64,8 @@ public class ApplicationContext {
 	public static RequestContext getCurrentRequest() {
 		return current.get();
 	}
-	
 	public ApplicationContext() {
+		
 		Bootstrap bootstrap = Bootstrap.foo.get();
 
 		//
@@ -78,14 +79,15 @@ public class ApplicationContext {
 	}
 	
 	public void invoke(ActionContext actionContext) {
-		Object ret = doInvoke((RequestContext)actionContext);
-		if(ret instanceof Response) {
-			Response renderResponse;
-		}
+		invoke((RequestContext) actionContext);
 	}
 	
 	public void invoke(RenderContext renderContext) {
 		invoke((RequestContext) renderContext);
+	}
+	
+	public void invoke(ResourceContext resourceContext) {
+		invoke((RequestContext) resourceContext);
 	}
 	
 	public Object invoke(RequestContext context) {
@@ -140,8 +142,8 @@ public class ApplicationContext {
 	@RenderScoped
 	public Printer getPrinter() {
 		RequestContext context = current.get();
-		if(context instanceof RenderContext) {
-			return ((RenderContext) context).getPrinter();
+		if(context instanceof MimeContext) {
+			return ((MimeContext) context).getPrinter();
 		} else throw new AssertionError("dose not make sense");
 	}
 	

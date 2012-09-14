@@ -15,53 +15,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu.portlet;
 
-import java.util.Map;
+import java.io.IOException;
 
+import javax.portlet.MimeResponse;
+import javax.portlet.PortletRequest;
+
+import org.juzu.URLBuilder;
 import org.juzu.application.Phase;
+import org.juzu.impl.request.RenderBridge;
+import org.juzu.text.Printer;
+import org.juzu.text.WriterPrinter;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public final class RenderContext extends MimeContext<RenderBridge>
+public class PortletMimeBridge<Rq extends PortletRequest, Rp extends MimeResponse> extends PortletRequestBridge<Rq, Rp> implements RenderBridge
 {
-   public RenderContext(ClassLoader classLoader, RenderBridge bridge)
+	private final Printer printer;
+	
+   public PortletMimeBridge(Rq request, Rp response) throws IOException
    {
-	   super(classLoader, bridge);
+	   super(request, response);
+	   this.printer = new WriterPrinter(response.getWriter());
    }
 
-   @Override
-   public Phase getPhase()
+   public Printer getPrinter()
    {
-	   return Phase.RENDER;
+	   return printer;
    }
 
-
-   @Override
-   public Map<Object, Object> getContext(Scope scope)
+   public URLBuilder createURLBuilder(Phase phase)
    {
-	   switch (scope)
+   	switch (phase)
       {
-			case FLASH :
-				return bridge.getFlashContext();
-			case MIME:
+			case ACTION :
+				return new URLBuilderImpl(response.createActionURL());
 			case RENDER:
-			case REQUEST:
-				return bridge.getRequestContext();
-			case ACTION:
-				return null;
+				return new URLBuilderImpl(response.createRenderURL());
 			case RESOURCE:
-				return null;
-			case SESSION:
-				return bridge.getSessionContext();
-			case IDENTITY:
-				return bridge.getIdentityContext();
+				return new URLBuilderImpl(response.createResourceURL());
 			default :
 				throw new AssertionError();
 		}
    }
-
 }

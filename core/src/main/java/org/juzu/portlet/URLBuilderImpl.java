@@ -15,7 +15,7 @@
  */
 package org.juzu.portlet;
 
-import javax.portlet.PortletURL;
+import javax.portlet.BaseURL;
 
 import org.juzu.URLBuilder;
 
@@ -26,9 +26,9 @@ import org.juzu.URLBuilder;
  */
 public class URLBuilderImpl implements URLBuilder {
 
-	private final PortletURL url;
+	private final BaseURL url;
 	
-	URLBuilderImpl(PortletURL url) {
+	URLBuilderImpl(BaseURL url) {
 		this.url = url;
 	}
 	

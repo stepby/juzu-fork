@@ -17,11 +17,38 @@
  */
 package org.juzu.application;
 
+import java.lang.annotation.Annotation;
+
+import org.juzu.Action;
+import org.juzu.Render;
+import org.juzu.Resource;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
 public enum Phase {
-	ACTION, RENDER
+	
+	/**
+	 * Action phase
+	 */
+	ACTION(Action.class),
+	
+	/**
+	 * Render phase
+	 */
+	RENDER(Render.class),
+	
+	/**
+	 * Resource phase
+	 */
+	RESOURCE(Resource.class);
+	
+	/** . */
+	public final Class<? extends Annotation> annotation;
+	
+	Phase(Class<? extends Annotation> annotation) {
+		this.annotation = annotation;
+	}
 }

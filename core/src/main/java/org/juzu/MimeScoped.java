@@ -15,53 +15,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.impl.request;
+package org.juzu;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.juzu.application.Phase;
+import javax.enterprise.context.NormalScope;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public final class RenderContext extends MimeContext<RenderBridge>
+@NormalScope
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+public @interface MimeScoped
 {
-   public RenderContext(ClassLoader classLoader, RenderBridge bridge)
-   {
-	   super(classLoader, bridge);
-   }
-
-   @Override
-   public Phase getPhase()
-   {
-	   return Phase.RENDER;
-   }
-
-
-   @Override
-   public Map<Object, Object> getContext(Scope scope)
-   {
-	   switch (scope)
-      {
-			case FLASH :
-				return bridge.getFlashContext();
-			case MIME:
-			case RENDER:
-			case REQUEST:
-				return bridge.getRequestContext();
-			case ACTION:
-				return null;
-			case RESOURCE:
-				return null;
-			case SESSION:
-				return bridge.getSessionContext();
-			case IDENTITY:
-				return bridge.getIdentityContext();
-			default :
-				throw new AssertionError();
-		}
-   }
 
 }

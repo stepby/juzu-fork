@@ -25,11 +25,10 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 
 import org.juzu.Action;
-import org.juzu.Binding;
 import org.juzu.Path;
 import org.juzu.Render;
+import org.juzu.Resource;
 import org.juzu.application.ApplicationDescriptor;
-import org.juzu.application.PhaseLiteral;
 import org.juzu.template.Template;
 import org.juzu.text.Printer;
 import org.sample.*;
@@ -58,7 +57,7 @@ public class Sample {
 	
 	@Action
 	public void action() {
-		return Sample_.foo("bar");
+		Sample_.foo("bar");
 	}
 	
 	@Render
@@ -83,5 +82,10 @@ public class Sample {
 	public void increment() throws IOException {
 		counter.increment();
 		Sample_.index();
+	}
+	
+	@Resource
+	public void serve() throws IOException {
+		printer.write("<html><head></head><body>resource serving</body></html>");
 	}
 }

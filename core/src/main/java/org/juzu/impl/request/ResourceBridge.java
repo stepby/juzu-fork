@@ -17,51 +17,12 @@
  */
 package org.juzu.impl.request;
 
-import java.util.Map;
-
-import org.juzu.application.Phase;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public final class RenderContext extends MimeContext<RenderBridge>
+public interface ResourceBridge extends MimeBridge
 {
-   public RenderContext(ClassLoader classLoader, RenderBridge bridge)
-   {
-	   super(classLoader, bridge);
-   }
-
-   @Override
-   public Phase getPhase()
-   {
-	   return Phase.RENDER;
-   }
-
-
-   @Override
-   public Map<Object, Object> getContext(Scope scope)
-   {
-	   switch (scope)
-      {
-			case FLASH :
-				return bridge.getFlashContext();
-			case MIME:
-			case RENDER:
-			case REQUEST:
-				return bridge.getRequestContext();
-			case ACTION:
-				return null;
-			case RESOURCE:
-				return null;
-			case SESSION:
-				return bridge.getSessionContext();
-			case IDENTITY:
-				return bridge.getIdentityContext();
-			default :
-				throw new AssertionError();
-		}
-   }
 
 }

@@ -17,19 +17,12 @@
  */
 package org.juzu.impl.request;
 
-import org.juzu.URLBuilder;
-import org.juzu.application.Phase;
-import org.juzu.text.Printer;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public interface RenderBridge extends RequestBridge
+public interface RenderBridge extends MimeBridge
 {
 
-	URLBuilder createURLBuilder(Phase phase);
-	
-	Printer getPrinter();
 }

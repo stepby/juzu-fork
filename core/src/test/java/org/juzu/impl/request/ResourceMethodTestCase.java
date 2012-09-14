@@ -21,34 +21,34 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
+import junit.framework.TestCase;
+
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.Phase;
 import org.juzu.impl.spi.fs.disk.DiskFileSystem;
 import org.juzu.test.CompilerHelper;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ActionMethodTestCase extends TestCase {
-
+public class ResourceMethodTestCase extends TestCase {
+	
 	@Override
 	public void setUp() throws Exception {
 		File root = new File(System.getProperty("test.resources"));
-		DiskFileSystem in = new DiskFileSystem(root, "request", "action");
+		DiskFileSystem in = new DiskFileSystem(root, "request", "resource");
 
 		//
 		CompilerHelper<File> compiler = new CompilerHelper<File>(in);
 		compiler.assertCompile();
-		aClass = compiler.assertClass("request.action.A");
-		compiler.assertClass("request.action.A_");
+		aClass = compiler.assertClass("request.resource.A");
+		compiler.assertClass("request.resource.A_");
 		
 		//
-		Class<?> appClass = compiler.assertClass("request.action.ActionApplication");
-		descriptor = (ApplicationDescriptor)appClass.getDeclaredField("DESCRIPTOR").get(null);
+		Class<?> appClass = compiler.assertClass("request.resource.ResourceApplication");
+		descriptor = (ApplicationDescriptor) appClass.getDeclaredField("DESCRIPTOR").get(null);
 	}
 	
 	private Class<?> aClass;
@@ -58,14 +58,14 @@ public class ActionMethodTestCase extends TestCase {
 	public void testNoArg() throws Exception {
 		ControllerMethod cm = descriptor.getControllerMethod(aClass, "noArg");
 		assertEquals("noArg", cm.getName());
-		assertEquals(Phase.ACTION, cm.getPhase());
+		assertEquals(Phase.RESOURCE, cm.getPhase());
 		assertEquals(Collections.emptyList(), cm.getArgumentParameters());
 	}
 	
 	public void testStringArg() throws Exception {
 		ControllerMethod cm = descriptor.getControllerMethod(aClass, "oneArg", String.class);
 		assertEquals("oneArg", cm.getName());
-		assertEquals(Phase.ACTION, cm.getPhase());
+		assertEquals(Phase.RESOURCE, cm.getPhase());
 		assertEquals(Arrays.asList(new ControllerParameter("foo")), cm.getArgumentParameters());
 	}
 }

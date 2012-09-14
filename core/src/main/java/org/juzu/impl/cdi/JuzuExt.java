@@ -50,6 +50,8 @@ public class JuzuExt implements Extension {
 		event.addContext(ScopeController.INSTANCE.requestContext);
 		event.addContext(ScopeController.INSTANCE.renderContext);
 		event.addContext(ScopeController.INSTANCE.actionContext);
+		event.addContext(ScopeController.INSTANCE.resourceContext);
+		event.addContext(ScopeController.INSTANCE.mimeContext);
 		event.addContext(ScopeController.INSTANCE.sessionContext);
 	}
 }

@@ -23,7 +23,6 @@ import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
-import org.juzu.application.Phase;
 import org.juzu.impl.request.Scope;
 
 /**

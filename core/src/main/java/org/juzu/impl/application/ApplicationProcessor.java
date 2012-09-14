@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.juzu.Action;
 import org.juzu.AmbiguousResolutionException;
 import org.juzu.Application;
 import org.juzu.Render;
+import org.juzu.Resource;
 import org.juzu.Response;
 import org.juzu.URLBuilder;
 import org.juzu.application.ApplicationDescriptor;
@@ -268,13 +268,9 @@ public class ApplicationProcessor extends ProcessorPlugin {
 		Map<String, ControllerMetaData> controllerMap = new HashMap<String, ControllerMetaData>() ;
 		Set<? extends Element> actions = getElementsAnnotatedWith(Action.class);
 		Set<? extends Element> renders = getElementsAnnotatedWith(Render.class);
-		Set<? extends Element> intersection = new HashSet<Element>(actions);
-		intersection.retainAll(renders);
-		if(intersection.size() > 0) {
-			throw new UnsupportedOperationException("handle me gracefully " + renders);
-		}
+		Set<? extends Element> resources = getElementsAnnotatedWith(Resource.class);
 		
-		for(Set<? extends Element> elts : Arrays.asList(actions, renders)) {
+		for(Set<? extends Element> elts : Arrays.asList(actions, renders, resources)) {
 			for(Element elt : elts) {
 				ExecutableElement executableElt = (ExecutableElement) elt;
 
@@ -298,13 +294,15 @@ public class ApplicationProcessor extends ProcessorPlugin {
 				}
 				
 				//
-				Phase phase;
-				if(elts == actions) {
-					phase = Phase.ACTION;
-				} else {
-					phase = Phase.RENDER;
+				List<Phase> determined = new ArrayList<Phase>();
+				for(Phase phase : Phase.values()) {
+					if(elt.getAnnotation(phase.annotation) != null) determined.add(phase);
 				}
-				
+				if(determined.size() > 1) {
+					throw new UnsupportedOperationException("handle me gracefully " + renders);
+				}
+				Phase phase =determined.get(0); 
+							
 				//
 				a.methods.add(new MethodMetaData(a, "method_" + methodCount++, phase, executableElt));
 			}
