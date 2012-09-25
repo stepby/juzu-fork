@@ -26,12 +26,9 @@ import java.util.List;
 import org.juzu.application.JuzuProcessor;
 import org.juzu.impl.compiler.CompilationError;
 import org.juzu.impl.compiler.Compiler;
-import org.juzu.impl.compiler.FileKey;
 import org.juzu.impl.spi.fs.ReadFileSystem;
-import org.juzu.impl.spi.fs.ReadWriteFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMFileSystem;
 import org.juzu.impl.spi.fs.ram.RAMPath;
-import org.juzu.impl.utils.Content;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -40,9 +37,9 @@ import org.juzu.impl.utils.Content;
  */
 public class CompilerHelper<I> {
 
-	private ReadFileSystem<I> in;
+	private ReadFileSystem<I> input;
 	
-	private RAMFileSystem out;
+	private RAMFileSystem output;
 	
 	private ClassLoader cl;
 	
@@ -50,17 +47,17 @@ public class CompilerHelper<I> {
 	
 	public CompilerHelper(ReadFileSystem<I> in) {
 		try {
-			this.in = in;
-			this.out = new RAMFileSystem();
-			compiler = new Compiler<I, RAMPath>(in, out);
+			this.input = in;
+			this.output = new RAMFileSystem();
+			compiler = new Compiler<I, RAMPath>(in, output);
 			compiler.addAnnotationProcessor(new JuzuProcessor());
 		} catch(IOException e) {
 			throw AbstractTestCase.failure(e);
 		}
 	}
 	
-	public Compiler getCompiler() {
-		return compiler;
+	public RAMFileSystem getOutput() {
+		return output;
 	}
 	
 	public List<CompilationError> failCompile() {
@@ -75,10 +72,10 @@ public class CompilerHelper<I> {
 	
 	public void assertCompile() {
 		try {
-			Compiler<I, RAMPath> compiler = new Compiler<I, RAMPath>(in, out);
+			Compiler<I, RAMPath> compiler = new Compiler<I, RAMPath>(input, output);
 			compiler.addAnnotationProcessor(new JuzuProcessor());
 			AbstractTestCase.assertEquals(Collections.emptyList(), compiler.compile());
-			cl = new URLClassLoader(new URL[] { out.getURL() }, Thread.currentThread().getContextClassLoader());
+			cl = new URLClassLoader(new URL[] { output.getURL() }, Thread.currentThread().getContextClassLoader());
 		} catch(IOException e) {
 			throw AbstractTestCase.failure(e);
 		}

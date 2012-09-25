@@ -21,12 +21,12 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
+import junit.framework.TestCase;
+
 import org.juzu.application.ApplicationDescriptor;
 import org.juzu.application.Phase;
 import org.juzu.impl.spi.fs.disk.DiskFileSystem;
 import org.juzu.test.CompilerHelper;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

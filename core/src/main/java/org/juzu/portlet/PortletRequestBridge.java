@@ -31,7 +31,7 @@ import org.juzu.impl.request.RequestBridge;
  * @version $Id$
  *
  */
-public class PortletRequestBridge<Rq extends PortletRequest, Rs extends PortletResponse> implements RequestBridge
+public abstract class PortletRequestBridge<Rq extends PortletRequest, Rs extends PortletResponse> implements RequestBridge
 {
 
 	protected final Rq request;
@@ -43,17 +43,38 @@ public class PortletRequestBridge<Rq extends PortletRequest, Rs extends PortletR
 		this.response = response;
 	}
 	
-   public Map<String, String[]> getParameters()
+   public final Map<String, String[]> getParameters()
    {
 	   return request.getParameterMap();
    }
 
-   public Map<Object, Object> getFlashContext()
+   public void setFlashValue(Object key, Object value)
    {
-	   return null;
+   	Map<Object, Object> flash = (Map<Object, Object>)getSessionValue("flash");
+   	if(flash == null) {
+   		setSessionValue("flash", flash = new HashMap<Object, Object>());
+   	}
+   	flash.put(key, value);
+   }
+   
+   public Object getFlashValue(Object key) {
+   	Map<Object, Object> flash = (Map<Object, Object>)getSessionValue(key);
+   	return flash != null ? flash.get(key) : null;
+   }
+   
+   public Object getRequestValue(Object key) {
+   	return getRequestContext().get(key);
+   }
+   
+   public void setRequestValue(Object key, Object value) {
+   	if(value == null) {
+   		getRequestContext().remove(key);
+   	} else {
+   		getRequestContext().put(key, value);
+   	}
    }
 
-   public Map<Object, Object> getRequestContext()
+   private Map<Object, Object> getRequestContext()
    {
    	Map<Object, Object> store = (Map<Object, Object>)request.getAttribute("org.juzu.request_scope");
    	if(store == null) {
@@ -61,8 +82,20 @@ public class PortletRequestBridge<Rq extends PortletRequest, Rs extends PortletR
    	}
 	   return store;
    }
+   
+   public Object getSessionValue(Object key) {
+   	return getSessionContext().get(key);
+   }
+   
+   public void setSessionValue(Object key, Object value) {
+   	if(value == null) {
+   		getSessionContext().remove(key);
+   	} else {
+   		getSessionContext().put(key, value);
+   	}
+   }
 
-   public Map<Object, Object> getSessionContext()
+   private Map<Object, Object> getSessionContext()
    {
    	PortletSession session = request.getPortletSession();
    	Map<Object, Object> store = (Map<Object, Object>) session.getAttribute("org.juzu.session_scope");
@@ -72,9 +105,10 @@ public class PortletRequestBridge<Rq extends PortletRequest, Rs extends PortletR
 	   return store;
    }
 
-   public Map<Object, Object> getIdentityContext()
-   {
+   public Object getIdentityValue(Object key) {
 	   return null;
    }
-
+   
+   public void setIdentityValue(Object key, Object value) {
+   }
 }

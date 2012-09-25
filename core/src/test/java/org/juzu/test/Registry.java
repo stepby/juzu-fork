@@ -15,34 +15,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.text;
+package org.juzu.test;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
  */
-public class WriterPrinter implements Printer {
+public class Registry
+{
+	private static final Map<Object, Object> state = new HashMap<Object, Object>();
 	
-	protected final Appendable writer;
-	
-	public WriterPrinter(Appendable writer) {
-		if(writer == null) throw new NullPointerException("No null writer accepted");
-		this.writer = writer;
+   public static <T> T get(Object key){
+		if(key == null) throw new NullPointerException();
+		@SuppressWarnings("unchecked")
+		T t = (T)state.get(key);
+		return t;
 	}
-
-	public void write(char c) throws IOException {
-		writer.append(c);
-	}
-
-	public void write(String s) throws IOException {
-		writer.append(s);
-	}
-
-	public void write(CharArray chars) throws IOException {
-		chars.write(writer);
-	}
+   
+   public static <T> void set(Object key, Object value) {
+   	if(key == null) {
+   		throw new NullPointerException();
+   	} else if(value != null) {
+   		state.put(key, value);
+   	} else {
+   		state.remove(key);
+   	}
+   }
+   
+   public static <T> T unset(Object key) {
+   	if(key == null) throw new NullPointerException();
+   	return (T) state.remove(key);
+   }
+   
+   public void clear() {
+   	state.clear();
+   }
 }

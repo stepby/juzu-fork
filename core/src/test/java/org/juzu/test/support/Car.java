@@ -15,34 +15,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.text;
-
-import java.io.IOException;
+package org.juzu.test.support;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
  */
-public class WriterPrinter implements Printer {
-	
-	protected final Appendable writer;
-	
-	public WriterPrinter(Appendable writer) {
-		if(writer == null) throw new NullPointerException("No null writer accepted");
-		this.writer = writer;
-	}
-
-	public void write(char c) throws IOException {
-		writer.append(c);
-	}
-
-	public void write(String s) throws IOException {
-		writer.append(s);
-	}
-
-	public void write(CharArray chars) throws IOException {
-		chars.write(writer);
+public class Car
+{
+	public long getIdentityHashCode() {
+		return System.identityHashCode(this);
 	}
 }

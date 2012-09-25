@@ -17,8 +17,6 @@
  */
 package org.juzu.impl.request;
 
-import java.util.Map;
-
 import org.juzu.application.Phase;
 
 /**
@@ -38,30 +36,4 @@ public final class RenderContext extends MimeContext<RenderBridge>
    {
 	   return Phase.RENDER;
    }
-
-
-   @Override
-   public Map<Object, Object> getContext(Scope scope)
-   {
-	   switch (scope)
-      {
-			case FLASH :
-				return bridge.getFlashContext();
-			case MIME:
-			case RENDER:
-			case REQUEST:
-				return bridge.getRequestContext();
-			case ACTION:
-				return null;
-			case RESOURCE:
-				return null;
-			case SESSION:
-				return bridge.getSessionContext();
-			case IDENTITY:
-				return bridge.getIdentityContext();
-			default :
-				throw new AssertionError();
-		}
-   }
-
 }

@@ -15,51 +15,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.portlet;
-
-import java.io.IOException;
-
-import javax.portlet.MimeResponse;
-import javax.portlet.PortletRequest;
+package org.juzu.impl.request;
 
 import org.juzu.URLBuilder;
 import org.juzu.application.Phase;
-import org.juzu.impl.request.MimeBridge;
 import org.juzu.text.Printer;
-import org.juzu.text.WriterPrinter;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class PortletMimeBridge<Rq extends PortletRequest, Rp extends MimeResponse> extends PortletRequestBridge<Rq, Rp> implements MimeBridge
+public class MockMimeBridge extends MockRequestBridge implements MimeBridge
 {
-	private final Printer printer;
+
+	private final MockPrinter printer;
 	
-   public PortletMimeBridge(Rq request, Rp response) throws IOException
+   public MockMimeBridge(MockClient client)
    {
-	   super(request, response);
-	   this.printer = new WriterPrinter(response.getWriter());
+	   super(client);
+	   this.printer = new MockPrinter();
+   }
+
+   public URLBuilder createURLBuilder(Phase phase)
+   {
+	   return new MockURLBuilder(phase);
    }
 
    public Printer getPrinter()
    {
 	   return printer;
-   }
-
-   public URLBuilder createURLBuilder(Phase phase)
-   {
-   	switch (phase)
-      {
-			case ACTION :
-				return new URLBuilderImpl(response.createActionURL());
-			case RENDER:
-				return new URLBuilderImpl(response.createRenderURL());
-			case RESOURCE:
-				return new URLBuilderImpl(response.createResourceURL());
-			default :
-				throw new AssertionError();
-		}
    }
 }

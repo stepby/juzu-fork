@@ -17,23 +17,50 @@
  */
 package org.juzu.impl.request;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.juzu.URLBuilder;
 import org.juzu.application.Phase;
+import org.juzu.test.AbstractTestCase;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ResourceContext extends MimeContext<ResourceBridge>
+public class MockURLBuilder implements URLBuilder
 {
-   public ResourceContext(ClassLoader classLoader, ResourceBridge bridge)
-   {
-	   super(classLoader, bridge);
-   }
+	private final Phase phase;
+	
+	private final Map<Object, Object> parameters;
+	
+	public MockURLBuilder(Phase phase) {
+		this.phase = phase;
+		this.parameters = new HashMap<Object, Object>();
+	}
 
-   @Override
-   public Phase getPhase()
+   public URLBuilder setParameter(String name, String value)
    {
-	   return Phase.RESOURCE;
+	   if(name == null || value == null) throw new NullPointerException();
+	   parameters.put(name, value);
+	   return this;
+   }
+   
+   @Override
+   public String toString() {
+   	try
+      {
+   		JSONObject url = new JSONObject();
+	      url.put("phase", phase);
+	      url.put("parameters", parameters);
+	      return url.toString();
+      }
+      catch (JSONException e)
+      {
+	      throw AbstractTestCase.failure(e);
+      }
    }
 }

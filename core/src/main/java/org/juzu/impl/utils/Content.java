@@ -65,7 +65,8 @@ public abstract class Content<V> {
 
 		@Override
 		public InputStream getInputStream() {
-			return new ByteArrayInputStream(charset.encode(CharBuffer.wrap(value)).array());
+			//return new ByteArrayInputStream(charset.encode(CharBuffer.wrap(value)).array());
+			return new ByteArrayInputStream(value.toString().getBytes(charset));
 		}
 
 		@Override

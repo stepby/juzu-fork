@@ -39,6 +39,7 @@ import javax.portlet.ActionResponse;
 import javax.portlet.Portlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
+import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
@@ -206,6 +207,12 @@ public class JuzuPortlet implements Portlet, ResourceServingPortlet {
 		if(errors.isEmpty()) {
 			RenderContext renderContext = new RenderContext(classLoader, new PortletRenderBridge(request, response));
 			applicationContext.invoke(renderContext);
+			
+			//Clean up flash scope
+			PortletSession session = request.getPortletSession();
+			if(session != null) {
+				session.removeAttribute("flash");
+			}
 		} else {
 //			Element elt	 = response.createElement("link");
 //			elt.setAttribute("rel", "stylesheet");

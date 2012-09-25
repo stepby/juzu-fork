@@ -79,25 +79,13 @@ public class ApplicationContext {
 		return descriptor;
 	}
 	
-	public void invoke(ActionContext actionContext) {
-		invoke((RequestContext) actionContext);
-	}
-	
-	public void invoke(RenderContext renderContext) {
-		invoke((RequestContext) renderContext);
-	}
-	
-	public void invoke(ResourceContext resourceContext) {
-		invoke((RequestContext) resourceContext);
-	}
-	
-	public Object invoke(RequestContext context) {
+	public void invoke(RequestContext context) {
 		ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(context.getClassLoader());
 			current.set(context);
 			ScopeController.begin(context);
-			return doInvoke(context);
+			doInvoke(context);
 		} finally {
 			current.set(null);
 			ScopeController.end();
@@ -105,7 +93,7 @@ public class ApplicationContext {
 		}
 	}
 	
-	private Object doInvoke(RequestContext context) {
+	private void doInvoke(RequestContext context) {
 		ControllerMethod method = resolver.resolve(context.getPhase(), context.getParameters());
 		if(method == null) {
 			StringBuilder sb = new StringBuilder("handle me gracefully: no method could be resolved for phase " + context.getPhase() + 
@@ -138,15 +126,13 @@ public class ApplicationContext {
 						args[i] = (values != null && values.length > 0) ? values[0] : null;
 					}
 					
-					return method.getMethod().invoke(o, args);
+					//
+					method.getMethod().invoke(o, args);
 				} catch(Exception e) {
 					throw new UnsupportedOperationException("handle me gracefully", e);
 				}
 			}
 		}
-		
-		//Should do something else instead
-		return null;
 	}
 	
 	@Produces

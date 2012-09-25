@@ -15,34 +15,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.text;
+package org.juzu.impl.request;
 
-import java.io.IOException;
+import org.juzu.Response;
+import org.juzu.impl.utils.Builder;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
  */
-public class WriterPrinter implements Printer {
+public class MockResponse implements Response
+{
 	
-	protected final Appendable writer;
+	private final Builder.Map<String, String> parameters;
 	
-	public WriterPrinter(Appendable writer) {
-		if(writer == null) throw new NullPointerException("No null writer accepted");
-		this.writer = writer;
+	public MockResponse() {
+		parameters = new Builder.Map<String, String>();
 	}
-
-	public void write(char c) throws IOException {
-		writer.append(c);
-	}
-
-	public void write(String s) throws IOException {
-		writer.append(s);
-	}
-
-	public void write(CharArray chars) throws IOException {
-		chars.write(writer);
-	}
+	
+   public void setParameter(String parameterName, String parameterValue)
+   {
+   	if(parameterName == null || parameterValue == null) throw new NullPointerException();
+	   parameters.put(parameterName, parameterValue);
+   }
 }

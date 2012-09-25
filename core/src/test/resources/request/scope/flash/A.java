@@ -15,34 +15,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.juzu.text;
+package request.scope.flash;
 
-import java.io.IOException;
+import javax.enterprise.context.ContextNotActiveException;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+
+import org.juzu.Action;
+import org.juzu.FlashScoped;
+import org.juzu.Render;
+import org.juzu.test.Registry;
+import org.juzu.test.support.Car;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * Mar 28, 2012
  */
-public class WriterPrinter implements Printer {
+public class A
+{
+	@Inject
+	private Car car;
 	
-	protected final Appendable writer;
+	@Produces
+	@FlashScoped
+	public static Car create() {
+		return new Car();
+	}
 	
-	public WriterPrinter(Appendable writer) {
-		if(writer == null) throw new NullPointerException("No null writer accepted");
-		this.writer = writer;
+	@Action
+	public void action() {
+		try {
+			long code = car.getIdentityHashCode();
+			Registry.set("car", code);
+		} catch(ContextNotActiveException e) {}
 	}
-
-	public void write(char c) throws IOException {
-		writer.append(c);
-	}
-
-	public void write(String s) throws IOException {
-		writer.append(s);
-	}
-
-	public void write(CharArray chars) throws IOException {
-		chars.write(writer);
+	
+	@Render
+	public void index() {
+		Registry.set("car", car.getIdentityHashCode());
+		Registry.set("action", A_.actionURL().toString());
 	}
 }

@@ -25,6 +25,8 @@ import java.net.URLStreamHandler;
 import org.juzu.impl.utils.Content;
 import org.juzu.impl.utils.Spliterator;
 
+import sun.net.www.ParseUtil;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -44,6 +46,10 @@ class RAMURLStreamHandler extends URLStreamHandler {
 		RAMPath path = fs.getPath(names);
 		if(path != null && fs.isFile(path)) {
 			Content<?> content = fs.getContent(path);
+//			char[] chars = content.getCharSequence().toString().toCharArray();
+//			for(int i = 0; i < chars.length; i++) {
+//				System.out.println("index = " + i + ", char =[" + chars[i] + "]");
+//			}
 			if(content != null) {
 				return new RAMURLConnection(u, content);
 			}

@@ -17,6 +17,8 @@
  */
 package org.juzu.impl.request;
 
+import org.juzu.application.Phase;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -24,19 +26,71 @@ package org.juzu.impl.request;
  */
 public enum Scope
 {
-	RENDER,
+	RENDER() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return context.getPhase() == Phase.RENDER;
+      }
+	},
 	
-	ACTION,
+	ACTION() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return context.getPhase() == Phase.ACTION;
+      }
+	},
 	
-	REQUEST,
+	REQUEST() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return true;
+      }
+		
+	},
 	
-	MIME,
+	MIME() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return context.getPhase() == Phase.RESOURCE;
+      }
+		
+	},
 	
-	RESOURCE,
+	RESOURCE() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return context.getPhase() == Phase.RESOURCE;
+      }
+	},
 	
-	SESSION,
+	SESSION() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return true;
+      }
+	},
 	
-	FLASH,
+	FLASH() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return true;
+      }
+	},
 	
-	IDENTITY
+	IDENTITY() {
+		@Override
+      public boolean isActive(RequestContext<?> context)
+      {
+	      return false;
+      }
+	};
+	
+	public abstract boolean isActive(RequestContext<?> context);
 }

@@ -27,6 +27,7 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
 import org.juzu.ActionScoped;
+import org.juzu.FlashScoped;
 import org.juzu.MimeScoped;
 import org.juzu.RenderScoped;
 import org.juzu.ResourceScoped;
@@ -40,9 +41,9 @@ import org.juzu.impl.request.Scope;
  */
 public class ScopeController {
 	
-	private static final Map<Contextual<?>, Object> EMPTY_MAP = Collections.emptyMap();
-	
 	static final ScopeController INSTANCE = new ScopeController();
+	
+	final ContextImpl flashContext = new ContextImpl(this, Scope.FLASH, FlashScoped.class);
 	
 	final ContextImpl requestContext = new ContextImpl(this, Scope.REQUEST, RequestScoped.class);
 	
@@ -78,14 +79,13 @@ public class ScopeController {
 		RequestContext ctx = currentContext.get();
 		if(ctx == null) throw new ContextNotActiveException();
 		
-		Map<Object, Object> map = ctx.getContext(scope);
-		if(map == null) throw new ContextNotActiveException();
+		if(!scope.isActive(ctx)) throw new ContextNotActiveException();
 
-		Object o = map.get(contextual);
+		Object o = ctx.getContextualValue(scope, contextual);
 		if(o == null) {
 			if(creationalContext != null) {
 				o = contextual.create(creationalContext);
-				map.put(contextual, o);
+				ctx.setContextualValue(scope, contextual, o);
 			}
 		}
 		return (T)o;
@@ -94,6 +94,6 @@ public class ScopeController {
 	public boolean isActive(Scope scope) {
 		RequestContext ctx = currentContext.get();
 		if(ctx == null) throw new ContextNotActiveException();
-		return ctx.getContext(scope) != null;
+		return scope.isActive(ctx);
 	}
 }
